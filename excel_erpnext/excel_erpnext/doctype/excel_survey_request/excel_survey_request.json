@@ -1,0 +1,510 @@
+{
+ "allow_import": 1,
+ "autoname": "SURV REQ-.YYYY.-.#####",
+ "creation": "2022-09-14 13:23:08.017964",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "survey_request_created_on",
+  "column_break_12",
+  "survey_status",
+  "section_break_2",
+  "survey_request_create_section",
+  "customer",
+  "customer_type",
+  "survey_date_time",
+  "engineers",
+  "column_break_2",
+  "customer_name",
+  "customer_email",
+  "survey_requested_by",
+  "address",
+  "column_break_4",
+  "contact_person",
+  "contact",
+  "survey_requester_contact",
+  "special_instructions",
+  "column_break_6",
+  "customer_requirement_details",
+  "survey_acknowledgement_section",
+  "acknowledge_date_time",
+  "column_break_29",
+  "acknowledged_by_user",
+  "column_break_31",
+  "acknowledged_by_name",
+  "column_break_33",
+  "acknowledgement_remarks",
+  "survey_assignment_section",
+  "assignment_date_time",
+  "column_break_30",
+  "assigned_to",
+  "column_break_32",
+  "assigned_to_name",
+  "column_break_34",
+  "assignment_remarks",
+  "survey_completion_section",
+  "boq_preparation_date_time",
+  "boq_submission_date_time",
+  "column_break_39",
+  "boq_prepared_by_user",
+  "boq_submitted_by_user",
+  "column_break_42",
+  "boq_prepared_by_name",
+  "boq_submitted_by_name",
+  "column_break_45",
+  "boq_remarks",
+  "boq_submitted_to",
+  "quotation_submission_section",
+  "quotation_preparation_date_time",
+  "quotation_submission_date_time",
+  "column_break_51",
+  "quotation_prepared_by_user",
+  "quotation_submitted_by_user",
+  "column_break_54",
+  "quotation_prepared_by_name",
+  "quotation_submitted_by_name",
+  "column_break_57",
+  "quotation_remarks",
+  "quotation_submitted_to",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "description": "If customer code is not available, leave empty",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer Code",
+   "options": "Customer"
+  },
+  {
+   "description": "Type manually if required",
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Name"
+  },
+  {
+   "fetch_from": "customer.primary_address",
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Customer Address"
+  },
+  {
+   "fetch_from": "customer.mobile_no",
+   "fieldname": "contact",
+   "fieldtype": "Data",
+   "label": "Customer Contact No"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Excel Survey Request",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_type",
+   "fieldtype": "Data",
+   "label": "Customer Type"
+  },
+  {
+   "fetch_from": "customer.email_id",
+   "fieldname": "customer_email",
+   "fieldtype": "Data",
+   "label": "Customer Email"
+  },
+  {
+   "description": "Type manually if required",
+   "fetch_from": "customer.customer_primary_contact",
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "label": "Customer Contact Person"
+  },
+  {
+   "fieldname": "survey_date_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Survey Date Time"
+  },
+  {
+   "default": "Now",
+   "fieldname": "survey_request_created_on",
+   "fieldtype": "Datetime",
+   "label": "Survey Request Created On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "survey_requested_by",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Survey Requested By"
+  },
+  {
+   "fieldname": "survey_requester_contact",
+   "fieldtype": "Data",
+   "label": "Survey Requester Contact"
+  },
+  {
+   "fieldname": "customer_requirement_details",
+   "fieldtype": "Long Text",
+   "label": "Customer Requirement Details"
+  },
+  {
+   "fieldname": "special_instructions",
+   "fieldtype": "Small Text",
+   "label": "Special Instructions"
+  },
+  {
+   "fieldname": "engineers",
+   "fieldtype": "Table",
+   "label": "Suggested Engineers",
+   "options": "Excel Project Tracking Engineers"
+  },
+  {
+   "fieldname": "survey_acknowledgement_section",
+   "fieldtype": "Section Break",
+   "label": "Survey Acknowledgement",
+   "permlevel": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "survey_request_create_section",
+   "fieldtype": "Section Break",
+   "label": "Survey Request Create"
+  },
+  {
+   "fieldname": "acknowledged_by_user",
+   "fieldtype": "Link",
+   "label": "Acknowledged By User",
+   "options": "User",
+   "permlevel": 1
+  },
+  {
+   "fetch_from": "acknowledged_by_user.full_name",
+   "fieldname": "acknowledged_by_name",
+   "fieldtype": "Data",
+   "label": "Acknowledged By Name",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "acknowledge_date_time",
+   "fieldtype": "Datetime",
+   "label": "Acknowledge Date Time",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "survey_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Survey Status",
+   "options": "In Progress\nAcknowledged\nEngineers Assigned\nBoQ Submitted\nQuotation Submitted"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_33",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "survey_assignment_section",
+   "fieldtype": "Section Break",
+   "label": "Survey Assignment",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_30",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_32",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assignment_date_time",
+   "fieldtype": "Datetime",
+   "label": "Assignment Date Time",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_34",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assignment_remarks",
+   "fieldtype": "Data",
+   "label": "Assignment Remarks",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "survey_completion_section",
+   "fieldtype": "Section Break",
+   "label": "Survey Completion",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "boq_prepared_by_user",
+   "fieldtype": "Link",
+   "label": "BoQ Prepared By User",
+   "options": "User",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "boq_preparation_date_time",
+   "fieldtype": "Datetime",
+   "label": "BoQ Preparation Date Time",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "boq_submission_date_time",
+   "fieldtype": "Datetime",
+   "label": "BoQ Submission Date Time",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_39",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "boq_submitted_by_user",
+   "fieldtype": "Link",
+   "label": "BoQ Submitted By User",
+   "options": "User",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_42",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "boq_prepared_by_user.full_name",
+   "fieldname": "boq_prepared_by_name",
+   "fieldtype": "Data",
+   "label": "BoQ Prepared By Name",
+   "permlevel": 1
+  },
+  {
+   "fetch_from": "boq_submitted_by_user.full_name",
+   "fieldname": "boq_submitted_by_name",
+   "fieldtype": "Data",
+   "label": "BoQ Submitted By Name",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "column_break_45",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "boq_remarks",
+   "fieldtype": "Data",
+   "label": "BoQ Remarks",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "boq_submitted_to",
+   "fieldtype": "Data",
+   "label": "BoQ Submitted to",
+   "permlevel": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "quotation_submission_section",
+   "fieldtype": "Section Break",
+   "label": "Quotation Submission"
+  },
+  {
+   "fieldname": "quotation_preparation_date_time",
+   "fieldtype": "Datetime",
+   "label": "Quotation Preparation Date Time"
+  },
+  {
+   "fieldname": "quotation_submission_date_time",
+   "fieldtype": "Datetime",
+   "label": "Quotation Submission Date Time"
+  },
+  {
+   "fieldname": "column_break_51",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quotation_prepared_by_user",
+   "fieldtype": "Link",
+   "label": "Quotation Prepared By User",
+   "options": "User"
+  },
+  {
+   "fieldname": "quotation_submitted_by_user",
+   "fieldtype": "Link",
+   "label": "Quotation Submitted By User",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_54",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "quotation_prepared_by_user.full_name",
+   "fieldname": "quotation_prepared_by_name",
+   "fieldtype": "Data",
+   "label": "Quotation Prepared By Name"
+  },
+  {
+   "fetch_from": "quotation_submitted_by_user.full_name",
+   "fieldname": "quotation_submitted_by_name",
+   "fieldtype": "Data",
+   "label": "Quotation Submitted By Name"
+  },
+  {
+   "fieldname": "column_break_57",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quotation_remarks",
+   "fieldtype": "Data",
+   "label": "Quotation Remarks"
+  },
+  {
+   "fieldname": "quotation_submitted_to",
+   "fieldtype": "Data",
+   "label": "Quotation Submitted to"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "acknowledgement_remarks",
+   "fieldtype": "Data",
+   "label": "Acknowledgement Remarks"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned to User",
+   "options": "User",
+   "permlevel": 1
+  },
+  {
+   "fetch_from": "assigned_by.full_name",
+   "fieldname": "assigned_to_name",
+   "fieldtype": "Data",
+   "label": "Assigned to Name",
+   "permlevel": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2022-11-08 17:24:38.611720",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel Survey Request",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Branch Sales Creator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Branch Sales Creator",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Branch Sales Approver",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Branch Sales Approver",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "set_user_permissions": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "set_user_permissions": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "customer_name",
+ "track_changes": 1
+}

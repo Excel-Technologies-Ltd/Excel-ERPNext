@@ -1,0 +1,117 @@
+{
+ "creation": "2022-09-15 17:32:42.270144",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine_sl_no",
+  "previous_counter",
+  "current_counter",
+  "total_counter",
+  "toner_model",
+  "toner_stock",
+  "toner_percentage",
+  "total_toner",
+  "last_month_total_toner_stock",
+  "last_month_toner_delivery",
+  "last_month_used_toner",
+  "printed_page_per_toner"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "machine_sl_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Machine SL No"
+  },
+  {
+   "columns": 1,
+   "fieldname": "previous_counter",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Prev Counter"
+  },
+  {
+   "columns": 1,
+   "fieldname": "current_counter",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Current Counter"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_counter",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Counter"
+  },
+  {
+   "columns": 1,
+   "fieldname": "toner_model",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Toner Model"
+  },
+  {
+   "columns": 1,
+   "fieldname": "toner_stock",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Toner Stock"
+  },
+  {
+   "columns": 1,
+   "fieldname": "toner_percentage",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Toner Percentage"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_toner",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Toner"
+  },
+  {
+   "columns": 1,
+   "fieldname": "last_month_total_toner_stock",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Last Month Total Toner Stock"
+  },
+  {
+   "columns": 1,
+   "fieldname": "last_month_toner_delivery",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Last Month Toner Delivery"
+  },
+  {
+   "columns": 1,
+   "fieldname": "last_month_used_toner",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Last Month Used Toner"
+  },
+  {
+   "columns": 1,
+   "fieldname": "printed_page_per_toner",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Printed Page Per Toner"
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-10-13 15:58:52.374519",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "MPS Toner Status",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

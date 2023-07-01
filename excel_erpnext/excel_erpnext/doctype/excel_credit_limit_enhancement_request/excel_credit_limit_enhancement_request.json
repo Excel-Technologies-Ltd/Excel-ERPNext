@@ -1,0 +1,137 @@
+{
+ "allow_import": 1,
+ "autoname": "CLR-.YY.-.#####",
+ "creation": "2022-05-09 14:59:35.564806",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "customer_name",
+  "sales_person",
+  "current_credit_limit",
+  "column_break_5",
+  "date",
+  "territory",
+  "customer_group",
+  "outstanding_balance",
+  "section_break_10",
+  "new_credit_limit_request",
+  "section_break_12",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "search_index": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "label": "Sales Person",
+   "options": "Sales Person"
+  },
+  {
+   "fieldname": "current_credit_limit",
+   "fieldtype": "Currency",
+   "label": "Current Credit Limit"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fetch_from": "customer.territory",
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Territory",
+   "options": "Territory"
+  },
+  {
+   "fetch_from": "customer.customer_group",
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Group",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "outstanding_balance",
+   "fieldtype": "Currency",
+   "label": "Outstanding Balance"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "new_credit_limit_request",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "New Credit Limit Request"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Excel Credit Limit Enhancement Request",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2022-05-10 10:33:54.049417",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel Credit Limit Enhancement Request",
+ "owner": "farid@excelbd.com",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "set_user_permissions": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "customer_name",
+ "track_changes": 1
+}

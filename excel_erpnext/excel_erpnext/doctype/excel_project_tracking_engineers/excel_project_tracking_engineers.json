@@ -1,0 +1,37 @@
+{
+ "creation": "2021-08-05 12:15:08.085416",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "name1"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User"
+  },
+  {
+   "fetch_from": "user.full_name",
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-09-14 14:15:40.407809",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel Project Tracking Engineers",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

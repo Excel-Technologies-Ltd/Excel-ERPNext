@@ -1,0 +1,100 @@
+{
+ "creation": "2023-01-03 14:53:22.080378",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "datetime",
+  "fixed_limit",
+  "extended_limit",
+  "increased_amount",
+  "conditional_balance",
+  "remarks",
+  "modified_user_name",
+  "modified_by_user_id",
+  "customer"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "extended_limit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Extended Limit",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "increased_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Increased Amount",
+   "read_only": 1
+  },
+  {
+   "columns": 3,
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Remarks"
+  },
+  {
+   "default": "user",
+   "fieldname": "modified_by_user_id",
+   "fieldtype": "Data",
+   "label": "Modified By User ID",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "user_fullname",
+   "fieldname": "modified_user_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Modified User Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Data",
+   "label": "Customer",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "default": "now",
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Date Time"
+  },
+  {
+   "columns": 1,
+   "fieldname": "conditional_balance",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Conditional Balance",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "fixed_limit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Fixed Limit",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2023-01-29 13:08:43.170364",
+ "modified_by": "shaid@excelbd.com",
+ "module": "Excel ERPNext",
+ "name": "Excel Customer Credit History",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
