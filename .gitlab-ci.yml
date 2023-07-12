@@ -1,48 +1,59 @@
 image: docker:latest
 
+stages:
+  - build
+  - deploy
+
 services:
   - docker:dind
 
-before_script:
-  - apk add git
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+variables:
+  FRAPPE_VERSION: v13.37.0
+  ERPNEXT_VERSION: v13.36.3
 
-build_excel_erpnext_nginx:
-  stage: build
-  only:
-    - tags
-  script:
-    - export VERSION=$(git tag --list --sort=-version:refname | sed -n 1p | sed -e 's#.*@\(\)#\1#')
-    - docker build -t excel-erpnext-nginx docker/excel-erpnext-nginx
-    - docker tag excel-erpnext-nginx "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-nginx:$VERSION"
-    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-nginx:$VERSION"
-
-build_excel_erpnext_worker:
-  stage: build
-  only:
-    - tags
-  script:
-    - export VERSION=$(git tag --list --sort=-version:refname | sed -n 1p | sed -e 's#.*@\(\)#\1#')
-    - docker build -t excel-erpnext-worker docker/excel-erpnext-worker
-    - docker tag excel-erpnext-worker "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-worker:$VERSION"
-    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-worker:$VERSION"
-
-build_staging_excel_erpnext_nginx:
+build_tags:
   stage: build
   only:
     refs:
-      - version-12
+      - version-13
+    changes:
+      - excel_erpnext/__init__.py
+  before_script:
+    # Install os dependencies
+    - apk --update add openssh-client git jq curl
+    # Login to container registry
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    # Install buildx
+    - mkdir -p $HOME/.docker/cli-plugins
+    - curl -sSLo $HOME/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64
+    - chmod +x ~/.docker/cli-plugins/docker-buildx
+    - docker buildx create --name ci_build_v13_tag --use
   script:
-    - docker build -t excel-erpnext-nginx docker/excel-erpnext-nginx
-    - docker tag excel-erpnext-nginx "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-nginx:latest"
-    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-nginx:latest"
+    - export VERSION=$(cat excel_erpnext/__init__.py | grep version | sed "s|__version__ = ||g" | sed "s|'||g")
+    - docker buildx bake --push
+    # Cleanup runner
+    - docker buildx stop ci_build_v13_tag
+    - docker buildx rm ci_build_v13_tag
+    - docker volume prune -f
 
-build_staging_excel_erpnext_worker:
+build_latest:
   stage: build
   only:
-    refs:
-      - version-12
+    - version-13
+  before_script:
+    # Install os dependencies
+    - apk --update add openssh-client git jq curl
+    # Login to container registry
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    # Install buildx
+    - mkdir -p $HOME/.docker/cli-plugins
+    - curl -sSLo $HOME/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64
+    - chmod +x ~/.docker/cli-plugins/docker-buildx
+    - docker buildx create --name ci_build_v13_latest --use
   script:
-    - docker build -t excel-erpnext-worker docker/excel-erpnext-worker
-    - docker tag excel-erpnext-worker "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-worker:latest"
-    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/excel_erpnext/excel-erpnext-worker:latest"
+    - export VERSION=version-13
+    - docker buildx bake --push
+    # Cleanup runner
+    - docker buildx stop ci_build_v13_latest
+    - docker buildx rm ci_build_v13_latest
+    - docker volume prune -f
