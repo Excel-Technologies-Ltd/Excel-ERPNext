@@ -13,6 +13,7 @@ echo -e "frappe\nerpnext\n${APP_NAME}" > /home/frappe/frappe-bench/sites/apps.tx
 mkdir -p apps
 cd apps
 git clone --depth 1 https://github.com/frappe/frappe ${BRANCH}
+git clone --depth 1 https://gitlab.com/excel.azmin/whitelabel.git main
 git clone --depth 1 ${APP_REPO} ${BRANCH}
 
 cd /home/frappe/frappe-bench/apps/frappe
