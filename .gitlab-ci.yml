@@ -8,8 +8,8 @@ services:
   - docker:dind
 
 variables:
-  FRAPPE_VERSION: v13.37.0
-  ERPNEXT_VERSION: v13.36.3
+  FRAPPE_VERSION: v13.57.5
+  ERPNEXT_VERSION: v13.52.4
 
 build_tags:
   stage: build
