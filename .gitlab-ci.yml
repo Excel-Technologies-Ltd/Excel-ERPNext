@@ -9,7 +9,7 @@ services:
 
 variables:
   FRAPPE_VERSION: v13.46.2
-  ERPNEXT_VERSION: v13.36.3
+  ERPNEXT_VERSION: v14.11.1
 
 build_tags:
   stage: build
