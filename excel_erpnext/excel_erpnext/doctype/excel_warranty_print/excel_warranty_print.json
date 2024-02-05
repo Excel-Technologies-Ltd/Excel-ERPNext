@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "field:uuid",
  "creation": "2021-06-23 19:03:54.593277",
  "doctype": "DocType",
@@ -153,7 +154,7 @@
   },
   {
    "fieldname": "items",
-   "fieldtype": "Text",
+   "fieldtype": "HTML Editor",
    "label": "Claimed Items",
    "read_only": 1
   },
@@ -278,10 +279,12 @@
    "read_only": 1
   }
  ],
- "modified": "2021-11-08 16:27:24.710410",
+ "links": [],
+ "modified": "2024-02-05 17:19:04.582937",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Excel Warranty Print",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -311,5 +314,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
