@@ -1,0 +1,276 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"0yceBIfhHM\",\"type\":\"card\",\"data\":{\"card_name\":\"Company Reports\",\"col\":4}},{\"id\":\"ZClKPzEAS7\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting Reports\",\"col\":4}},{\"id\":\"PDVfCzLLBG\",\"type\":\"card\",\"data\":{\"card_name\":\"Sales Person Reports\",\"col\":4}},{\"id\":\"gxCzrpaiHi\",\"type\":\"card\",\"data\":{\"card_name\":\"Product Reports\",\"col\":4}},{\"id\":\"09M7lVU16z\",\"type\":\"card\",\"data\":{\"card_name\":\"SCM Reports\",\"col\":4}},{\"id\":\"6DMjLsQVnD\",\"type\":\"card\",\"data\":{\"card_name\":\"Project Related Reports\",\"col\":4}}]",
+ "creation": "2024-02-06 17:25:17.843580",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "table",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Reports",
+ "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Newsletter",
+   "link_count": 0,
+   "link_to": "Newsletter",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Email Group",
+   "link_count": 0,
+   "link_to": "Email Group",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Company Reports",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Company Performance Summary",
+   "link_count": 0,
+   "link_to": "Excel Company Performance Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Territory Performance",
+   "link_count": 0,
+   "link_to": "Excel Territory Performance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Customer Group Performance",
+   "link_count": 0,
+   "link_to": "Excel Customer Group Performance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Accounting Reports",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Account Wise Ledger",
+   "link_count": 0,
+   "link_to": "Excel Account Wise Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Gross Profit by Costing",
+   "link_count": 0,
+   "link_to": "Excel Gross Profit by Costing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Accounts Receivable",
+   "link_count": 0,
+   "link_to": "Excel Accounts Receivable",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Cheque in Hand",
+   "link_count": 0,
+   "link_to": "Excel Cheque in Hand",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Daily Collection",
+   "link_count": 0,
+   "link_to": "Excel Daily Collection",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Person Reports",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Customer Ledger",
+   "link_count": 0,
+   "link_to": "Excel Customer Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Product Reports",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Product Performance Analysis",
+   "link_count": 0,
+   "link_to": "Excel Product Performance Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Stock Balance",
+   "link_count": 0,
+   "link_to": "Excel Stock Balance",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Product Ledger",
+   "link_count": 0,
+   "link_to": "Excel Product Ledger",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Purchase History",
+   "link_count": 0,
+   "link_to": "Excel Purchase History",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SCM Reports",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel LC Pipeline Status",
+   "link_count": 0,
+   "link_to": "Excel LC Pipeline Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel LC Pipeline Summary",
+   "link_count": 0,
+   "link_to": "Excel LC Pipeline Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Project Related Reports",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Project Wise Ageing Summary Report",
+   "link_count": 0,
+   "link_to": "Excel Project Wise Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Project Wise Invoice Ageing Report",
+   "link_count": 0,
+   "link_to": "Excel Project Wise Invoice Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-02-06 18:54:34.969414",
+ "modified_by": "Administrator",
+ "module": "Excel Reports",
+ "name": "Reports",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 18.0,
+ "shortcuts": [],
+ "title": "Reports"
+}

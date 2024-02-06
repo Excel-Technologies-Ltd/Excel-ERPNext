@@ -1,0 +1,497 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"0yceBIfhHM\",\"type\":\"card\",\"data\":{\"card_name\":\"IoU and Claims\",\"col\":4}},{\"id\":\"CxMdLEJhAu\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting Dimensions\",\"col\":4}},{\"id\":\"am4CEuowIm\",\"type\":\"card\",\"data\":{\"card_name\":\"SCM\",\"col\":4}},{\"id\":\"xqOpkQz3L2\",\"type\":\"card\",\"data\":{\"card_name\":\"Corporate Project\",\"col\":4}},{\"id\":\"CBTE10uKLG\",\"type\":\"card\",\"data\":{\"card_name\":\"Support Team\",\"col\":4}}]",
+ "creation": "2024-02-06 17:28:16.415145",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "file",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Excel",
+ "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Newsletter",
+   "link_count": 0,
+   "link_to": "Newsletter",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Email Group",
+   "link_count": 0,
+   "link_to": "Email Group",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "IoU and Claims",
+   "link_count": 3,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": " IoU (Employee Advance)",
+   "link_count": 0,
+   "link_to": "Employee Advance",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "IoU Project",
+   "link_count": 0,
+   "link_to": "IoU Project",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": " Employee Advance Summary",
+   "link_count": 0,
+   "link_to": "Employee Advance Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Accounting Dimensions",
+   "link_count": 10,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel LC No",
+   "link_count": 0,
+   "link_to": "Excel LC No",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Long Term Loans",
+   "link_count": 0,
+   "link_to": "Excel Long Term Loans",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Office Locations",
+   "link_count": 0,
+   "link_to": "Excel Office Locations",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Other Loans and Advances",
+   "link_count": 0,
+   "link_to": "Excel Other Loans and Advances",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Product Team",
+   "link_count": 0,
+   "link_to": "Excel Product Team",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Securities Deposits and Prepayment",
+   "link_count": 0,
+   "link_to": "Excel Securities Deposits and Prepayment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Short Term Investments",
+   "link_count": 0,
+   "link_to": "Excel Short Term Investments",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Short Term Loan",
+   "link_count": 0,
+   "link_to": "Excel Short Term Loan",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Dream Project",
+   "link_count": 0,
+   "link_to": "Excel Dream Project",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Child Customers",
+   "link_count": 0,
+   "link_to": "Excel Child Customers",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SCM",
+   "link_count": 13,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel LC Costing",
+   "link_count": 0,
+   "link_to": "Excel LC Costing",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel LC Pipeline",
+   "link_count": 0,
+   "link_to": "Excel LC Pipeline",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel LC Details",
+   "link_count": 0,
+   "link_to": "Excel LC Details",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Brand List",
+   "link_count": 0,
+   "link_to": "Excel SCM Brand List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Supplier and Shipper List",
+   "link_count": 0,
+   "link_to": "Excel SCM Supplier and Shipper List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Transport and CnF List",
+   "link_count": 0,
+   "link_to": "Excel SCM Transport and CnF List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM LC Opening Bank List",
+   "link_count": 0,
+   "link_to": "Excel SCM LC Opening Bank List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM CNEE List",
+   "link_count": 0,
+   "link_to": "Excel SCM CNEE List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Insurance Provider List",
+   "link_count": 0,
+   "link_to": "Excel SCM Insurance Provider List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Freight Forwarder List",
+   "link_count": 0,
+   "link_to": "Excel SCM Freight Forwarder List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Destination List",
+   "link_count": 0,
+   "link_to": "Excel SCM Destination List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Shipment Status List",
+   "link_count": 0,
+   "link_to": "Excel SCM Shipment Status List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel SCM Shipment Mode List",
+   "link_count": 0,
+   "link_to": "Excel SCM Shipment Mode List",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Corporate Project",
+   "link_count": 5,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Project Pre Costing",
+   "link_count": 0,
+   "link_to": "Excel Project Pre Costing",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Quotation",
+   "link_count": 0,
+   "link_to": "Excel Quotation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel MPS Counter",
+   "link_count": 0,
+   "link_to": "Excel MPS Counter",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Survey Request",
+   "link_count": 0,
+   "link_to": "Excel Survey Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Monthly MPS Toner Status",
+   "link_count": 0,
+   "link_to": "Monthly MPS Toner Status",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Support Team",
+   "link_count": 9,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Project Tracking Summary",
+   "link_count": 0,
+   "link_to": "Excel Project Tracking Summary",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Project Tracking Summary Ageing",
+   "link_count": 0,
+   "link_to": "Excel Project Tracking Summary Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Excel Project Tracking Summary Invoice Ageing",
+   "link_count": 0,
+   "link_to": "Excel Project Tracking Summary Invoice Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Project Tracking",
+   "link_count": 0,
+   "link_to": "Excel Project Tracking",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Project Wise Ageing Summary Report",
+   "link_count": 0,
+   "link_to": "Excel Project Wise Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Project Wise Invoice Ageing Report",
+   "link_count": 0,
+   "link_to": "Excel Project Wise Invoice Ageing",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Excel Daily Task",
+   "link_count": 0,
+   "link_to": "Excel Daily Task",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Issue",
+   "link_count": 0,
+   "link_to": "Issue",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Task",
+   "link_count": 0,
+   "link_to": "Task",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-02-06 18:54:35.041018",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 19.0,
+ "shortcuts": [],
+ "title": "Excel"
+}
