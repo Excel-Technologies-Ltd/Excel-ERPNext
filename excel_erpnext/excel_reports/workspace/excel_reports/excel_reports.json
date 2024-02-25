@@ -10,7 +10,7 @@
  "icon": "table",
  "idx": 0,
  "is_hidden": 0,
- "label": "Reports",
+ "label": "Excel Reports",
  "links": [
   {
    "dependencies": "",
@@ -259,10 +259,10 @@
    "type": "Link"
   }
  ],
- "modified": "2024-02-06 18:54:34.969414",
+ "modified": "2024-02-25 17:29:49.332560",
  "modified_by": "Administrator",
  "module": "Excel Reports",
- "name": "Reports",
+ "name": "Excel Reports",
  "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
@@ -272,5 +272,5 @@
  "roles": [],
  "sequence_id": 18.0,
  "shortcuts": [],
- "title": "Reports"
+ "title": "Excel Reports"
 }
