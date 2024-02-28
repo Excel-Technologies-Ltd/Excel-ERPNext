@@ -1,4 +1,6 @@
 {
+ "actions": [],
+ "allow_rename": 1,
  "autoname": "field:project_name",
  "creation": "2023-05-21 12:00:54.158787",
  "doctype": "DocType",
@@ -29,10 +31,12 @@
    "permlevel": 3
   }
  ],
- "modified": "2023-05-21 12:01:50.332921",
+ "links": [],
+ "modified": "2024-02-28 11:39:08.386151",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "IoU Project",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -75,5 +79,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

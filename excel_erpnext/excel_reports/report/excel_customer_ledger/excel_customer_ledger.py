@@ -136,7 +136,7 @@ def get_gl_entries(filters):
 			against_voucher_type, against_voucher, account_currency,
 			remarks, against, is_opening {select_fields}
 		from `tabGL Entry`
-		where company=%(company)s {conditions}
+		where is_cancelled=0 and company=%(company)s {conditions}
 		{order_by_statement}
 		""".format(
 			select_fields=select_fields, conditions=get_conditions(filters),
