@@ -250,20 +250,20 @@ scheduler_events = {
 #         ]
 #     },
 # ]
-fixtures = [  'Custom Field',  'Property Setter']
+# fixtures = [  'Custom Field',  'Property Setter']
 
 
-# fixtures = [
-# 	{
-#         "dt": "Print Format",
-#         "filters": [
-#             [
-#                 "name",
-#                 "in",
-#                 [
-#                   "Excel Estimate Print"  
-#                 ],
-#             ],
-#         ]
-#     },
-# ]
+fixtures = [
+	{
+        "dt": "Print Format",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                  "Excel Estimate Print"  
+                ],
+            ],
+        ]
+    },
+]
