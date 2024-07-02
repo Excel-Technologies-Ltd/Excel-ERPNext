@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "autoname": "field:item_code",
+ "creation": "2024-07-02 12:18:50.485475",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "column_break_vxvjw",
+  "item_group",
+  "item_brand",
+  "stock_details_section",
+  "pipeline",
+  "under_production",
+  "column_break_0kred",
+  "proposed_new_order_qty",
+  "suggested__order"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1,
+   "set_only_once": 1,
+   "unique": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_vxvjw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.brand",
+   "fieldname": "item_brand",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Brand",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_details_section",
+   "fieldtype": "Section Break",
+   "label": "Stock Details"
+  },
+  {
+   "fieldname": "pipeline",
+   "fieldtype": "Float",
+   "label": "Pipeline"
+  },
+  {
+   "fieldname": "under_production",
+   "fieldtype": "Float",
+   "label": "Under Production"
+  },
+  {
+   "fieldname": "column_break_0kred",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "proposed_new_order_qty",
+   "fieldtype": "Float",
+   "label": "Proposed New Order Qty"
+  },
+  {
+   "fieldname": "suggested__order",
+   "fieldtype": "Float",
+   "label": "Suggested  order"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-02 14:52:58.095983",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel PSI",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "item_code",
+ "track_changes": 1
+}
