@@ -7,32 +7,38 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "sms",
+  "customer_alerts_section",
+  "excel_sms",
   "column_break_bwbao",
-  "email"
+  "excel_email"
  ],
  "fields": [
-  {
-   "default": "0",
-   "fieldname": "sms",
-   "fieldtype": "Check",
-   "label": "SMS"
-  },
   {
    "fieldname": "column_break_bwbao",
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "customer_alerts_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Alerts"
+  },
+  {
    "default": "0",
-   "fieldname": "email",
+   "fieldname": "excel_sms",
    "fieldtype": "Check",
-   "label": "Email"
+   "label": "Via SMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "excel_email",
+   "fieldtype": "Check",
+   "label": "Via Email"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-17 14:46:04.392643",
+ "modified": "2024-10-22 10:59:54.514597",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

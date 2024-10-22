@@ -5,7 +5,17 @@ from frappe import _
 from frappe.desk.reportview import get_count as get_filtered_count
 from frappe.desk.reportview import get_form_params
 
+import frappe
+from io import BytesIO
+from weasyprint import HTML
+from PIL import Image,ImageOps  # Pillow is already installed
+from frappe.utils.pdf import get_pdf
 
+import frappe
+from frappe import _
+from frappe.www.printview import validate_print_permission
+from frappe.translate import print_language
+from frappe.utils.pdf import get_pdf
 
 @frappe.whitelist(methods=["POST"])
 def insert_json():
@@ -163,13 +173,89 @@ def insert_json():
     doc.insert()
 
 @frappe.whitelist(allow_guest=True)
-    def get_list():
-        args = get_form_params()
-        docs = frappe.get_list(**args)
+def get_list():
+    args = get_form_params()
+    docs = frappe.get_list(**args)
+
+    frappe.local.response = frappe._dict(
+    {
+        "docs": docs,
+        "length": get_filtered_count(),
+    }    
+)
     
-        frappe.local.response = frappe._dict(
-        {
-            "docs": docs,
-            "length": get_filtered_count(),
-        }    
-    )
+
+
+@frappe.whitelist(allow_guest=True)
+def download_pdf_as_image(doctype, name, format=None, doc=None, no_letterhead=0, language=None, letterhead=None, image_format="PNG"):
+    """
+    Converts a document to an image by generating HTML and rendering it as an image using WeasyPrint.
+    Optimizes the image size and crops extra white space.
+    
+    :param doctype: The DocType of the document to be converted to an image.
+    :param name: The name of the document.
+    :param format: The Print Format to use (optional).
+    :param no_letterhead: Whether to exclude the letterhead (default 0).
+    :param language: Language for the output (optional).
+    :param letterhead: Letterhead to use (optional).
+    :param image_format: The format of the output image (PNG/JPEG), default is PNG.
+    
+    :returns: Image file in the requested format (PNG by default).
+    """
+
+    # Generate the HTML content for the document
+    doc = doc or frappe.get_doc(doctype, name)
+
+    with print_language(language):
+        html_content = frappe.get_print(
+            doctype, name, format, doc=doc, as_pdf=False, letterhead=letterhead, no_letterhead=no_letterhead
+        )
+
+    # Set a larger width to accommodate content, e.g., 1280px
+    output_width = 1280  # You can increase this if needed
+    scale_factor = 2  # Scale factor for better resolution
+
+    # Render the HTML to PNG using WeasyPrint with a fixed width
+    png_bytes = BytesIO()
+    document = HTML(string=html_content)
+
+    # Render the document and calculate dimensions
+    rendered_pages = document.render()
+
+    # Dynamically calculate width and height based on content, convert to integers
+    output_height = int(rendered_pages.pages[0].height * (output_width / rendered_pages.pages[0].width))
+    output_width = int(output_width)
+
+    # Write the PNG image to the BytesIO object with fixed width
+    document.write_png(png_bytes, resolution=96)
+
+    # Open the image with Pillow and add a white background if needed
+    png_bytes.seek(0)
+    image = Image.open(png_bytes)
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        background = Image.new('RGB', image.size, (255, 255, 255))  # Create white background
+        background.paste(image, mask=image.split()[3])  # Paste the image on top of the white background
+        image = background 
+    # Crop white space if needed
+    image = ImageOps.crop(image, border=20)  # You can adjust the crop margin to remove excess white space
+
+    # Save the final image with adjusted size
+    output_image_bytes = BytesIO()
+    image.save(output_image_bytes, format=image_format.upper())
+
+    # Set the correct content type and return the image as binary
+    frappe.local.response.filename = f"{name}.{image_format.lower()}"
+    frappe.local.response.filecontent = output_image_bytes.getvalue()
+    frappe.local.response.type = "download"
+    frappe.local.response.headers = {
+        "Content-Type": f"image/{image_format.lower()}",
+        "Content-Disposition": f'inline; filename="{name}.{image_format.lower()}"'
+    }
+
+    return output_image_bytes.getvalue()  # Return the binary image data
+
+
+
+@frappe.whitelist(allow_guest=True)
+def hello():
+    return "Hello"
