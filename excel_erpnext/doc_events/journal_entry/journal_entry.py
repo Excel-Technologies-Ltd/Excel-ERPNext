@@ -14,17 +14,17 @@ def send_notification(doc, method=None):
     if len(customer_accounts) == 0:
         return
     settings = frappe.get_doc("ArcApps Alert Settings")
-    sms_enabled = bool(settings.sms)
-    email_enabled = bool(settings.email)
+    sms_enabled = bool(settings.excel_sms)
+    email_enabled = bool(settings.excel_email)
     for account in customer_accounts:
         customer = frappe.get_doc("Customer", account.party)
-        notification_type = customer.notification_type
+        notification_type = customer.excel_notification_type
         mobile_number = customer.mobile_no
         if notification_type == "SMS" and sms_enabled and mobile_number:
             send_sms(doc, account,method,mobile_number)
         elif notification_type == "Email" and email_enabled and customer.email_id:
             send_email(doc, account,method,customer.email_id)
-        elif notification_type == "Both" and sms_enabled and email_enabled and mobile_number and customer.email_id:
+        elif notification_type == "SMS & Email" and sms_enabled and email_enabled and mobile_number and customer.email_id:
             send_sms(doc, account,method,mobile_number)
             send_email(doc, account,method,customer.email_id)
     

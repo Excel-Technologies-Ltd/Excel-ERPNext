@@ -10,11 +10,11 @@ def send_notification(doc, method=None):
         return
     frappe.msgprint(frappe.as_json(doc))
     settings = frappe.get_doc("ArcApps Alert Settings")
-    sms_enabled = bool(settings.sms)
-    email_enabled = bool(settings.email)
+    sms_enabled = bool(settings.excel_sms)
+    email_enabled = bool(settings.excel_email)
     customer = frappe.get_doc("Customer", doc.party)
-    notification_type = customer.notification_type
-    mobile_number = customer.mobile_number
+    notification_type = customer.excel_notification_type
+    mobile_number = customer.mobile_no
     email_id = customer.email_id
     if notification_type == "SMS" and sms_enabled:
         send_sms(doc,method,mobile_number)
@@ -28,7 +28,7 @@ def send_sms(doc,method,mobile_number):
         total_amount = doc.paid_amount
         outstanding_balance = get_customer_outstanding_balance(doc.party)
         posting_date = doc.posting_date
-        if method == "on_submit":
+        if method == "on_update":
             message = f"Dear Valued Partner,taka {total_amount} has been deposited from {doc.party}. Total Outstanding: {outstanding_balance}. Date: {posting_date}."
         send_sms_frappe([mobile_number],message,)
         
@@ -37,7 +37,7 @@ def send_email(doc,method,email_id):
         total_amount = doc.paid_amount
         outstanding_balance = get_customer_outstanding_balance(doc.party)
         posting_date = doc.posting_date
-        if method == "on_submit":
+        if method == "on_update":
             subject = "Payment Received Notification"
             message = f"""
                 <p>Dear Valued Partner,</p>

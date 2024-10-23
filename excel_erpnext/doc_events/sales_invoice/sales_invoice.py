@@ -7,17 +7,17 @@ except locale.Error:
 from frappe.core.doctype.sms_settings.sms_settings import send_sms as send_sms_frappe
 def send_notification(doc, method=None):
     settings = frappe.get_doc("ArcApps Alert Settings")
-    sms_enabled = bool(settings.sms)
-    email_enabled = bool(settings.email)
+    sms_enabled = bool(settings.excel_sms)
+    email_enabled = bool(settings.excel_email)
     customer = frappe.get_doc("Customer", doc.customer)
-    notification_type = customer.notification_type
+    notification_type = customer.excel_notification_type
     mobile_number = customer.mobile_no
     email_id = customer.email_id
     if notification_type == "SMS" and sms_enabled and mobile_number:
         send_sms(doc,method,mobile_number)
     elif notification_type == "Email" and email_enabled and email_id:
         send_email(doc,method,email_id)
-    elif notification_type == "Both" and sms_enabled and email_enabled and mobile_number and email_id:
+    elif notification_type == "SMS & Email" and sms_enabled and email_enabled and mobile_number and email_id:
         send_sms(doc,method,mobile_number)
         send_email(doc,method,email_id)
     
