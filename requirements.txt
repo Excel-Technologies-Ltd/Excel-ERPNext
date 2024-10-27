@@ -1,2 +1,5 @@
 frappe
 pdf2image
+Flask
+reportlab
+pillow

@@ -1,84 +1,116 @@
 import frappe
-import locale
-try:
-    locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-from frappe.core.doctype.sms_settings.sms_settings import send_sms as send_sms_frappe
+from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel
 def send_notification(doc, method=None):
+    
+    if doc.payment_type != "Receive":
+        return
     if doc.party_type != "Customer":
         return
-    frappe.msgprint(frappe.as_json(doc))
     settings = frappe.get_doc("ArcApps Alert Settings")
     sms_enabled = bool(settings.excel_sms)
     email_enabled = bool(settings.excel_email)
-    customer = frappe.get_doc("Customer", doc.party)
-    notification_type = customer.excel_notification_type
-    mobile_number = customer.mobile_no
-    email_id = customer.email_id
-    if notification_type == "SMS" and sms_enabled:
-        send_sms(doc,method,mobile_number)
-    elif notification_type == "Email" and email_enabled:
-        send_email(doc,method,email_id)
-    elif notification_type == "Both" and sms_enabled and email_enabled:
-        send_sms(doc,method,mobile_number)
-        send_email(doc,method,email_id)
-def send_sms(doc,method,mobile_number):
+    notification_permission = get_notification_permission(doc.party)
+    if notification_permission['sms']:
+        send_sms_notification(doc, method)
+    if notification_permission['email']:
+        send_email_notification(doc, method)
+    if notification_permission['both']:
+        if sms_enabled:
+            send_sms_notification(doc, method)
+        if email_enabled:
+            send_email_notification(doc, method)
+def send_sms_notification(doc,method):
     if doc.party_type == "Customer":
-        total_amount = doc.paid_amount
-        outstanding_balance = get_customer_outstanding_balance(doc.party)
-        posting_date = doc.posting_date
-        if method == "on_update":
-            message = f"Dear Valued Partner,taka {total_amount} has been deposited from {doc.party}. Total Outstanding: {outstanding_balance}. Date: {posting_date}."
-        send_sms_frappe([mobile_number],message,)
+        customer_details = get_customer_details(doc.party,outstanding_balance=True)
+        party_name=doc.party_name
+        mobile_number = customer_details.get('notified_phone_no_list')
+        if len(mobile_number) == 0:
+            return
+        outstanding_balance = customer_details.get('outstanding_balance')
+        voucher_no = doc.name
+        mode_of_payment = doc.mode_of_payment
         
-def send_email(doc,method,email_id):
+        paid_amount = doc.paid_amount
+        posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
+        posting_time = format_time_to_ampm(doc.modified)
+        if method == "on_submit":
+            message = f"{party_name}, Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{outstanding_balance}/=[ETL]"
+            send_sms_frappe(mobile_number,message,success_msg=False)
+        if method == "on_cancel":
+            message = f"Dear {party_name}, {voucher_no} has been canceled. Balance Tk. {(outstanding_balance)}/=. [ETL]"
+            send_sms_frappe(mobile_number,message,success_msg=False)
+        
+def send_email_notification(doc,method):
     if doc.party_type == "Customer":
-        total_amount = doc.paid_amount
-        outstanding_balance = get_customer_outstanding_balance(doc.party)
-        posting_date = doc.posting_date
-        if method == "on_update":
-            subject = "Payment Received Notification"
+        customer_details = get_customer_details(doc.party,outstanding_balance=True)
+        party_name=doc.party_name
+        email_id = customer_details.get('notified_email_list')
+        if len(email_id) == 0:
+            return
+        custom_brand_wise_payments=doc.custom_brand_wise_payments
+        brands = [entry.brand for entry in custom_brand_wise_payments]
+        if len(brands) == 0:
+            brand_list = ""
+        else:
+            brand_list = f" against the [{', '.join(brands)}]"
+        outstanding_balance = customer_details.get('outstanding_balance')
+        voucher_no = doc.name
+        mode_of_payment = doc.mode_of_payment
+        paid_amount = doc.paid_amount
+        posting_date = format_date_to_custom(doc.posting_date ,need_year=True) if method == "on_submit" and doc.posting_date else format_date_to_custom_cancel(doc.modified,need_year=True)
+        
+        sales_person_email = customer_details.get('sales_person_email')
+        sales_person_name = customer_details.get('sales_person_name')
+        sales_person_mobile_no = customer_details.get('sales_person_mobile_no')
+        posting_time = format_time_to_ampm(doc.modified,is_mail=True)
+        if method == "on_submit":
+            subject = "[ETL] Payment Notification"
             message = f"""
-                <p>Dear Valued Partner,</p>
-                <p>taka<b>{format_in_bangladeshi_currency(total_amount)}৳</b> has been deposited from {doc.party}</p>
-                <p>Total Outstanding: <b>{format_in_bangladeshi_currency(outstanding_balance)}৳</b></p>
-                <p>Date: {posting_date}</p>
-                <p>Sincerely!!</p>
+                <p>Dear <b>{party_name}</b>,</p>
+                <p>Thank you for your payment of Taka <b>{paid_amount}/=</b> via {voucher_no} {brand_list} on {posting_date} at {posting_time} by <b>[{mode_of_payment}]</b>. Your current outstanding balance is Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
+                <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
+                {f'at <b>{sales_person_mobile_no}</b>' if sales_person_mobile_no  else ''}
+                {f'or email' if sales_person_email and sales_person_mobile_no else ''}
+                {f'at <b>{sales_person_email}</b>' if sales_person_email  else ''} </p>
+                <p>For more information on our products and services, please visit our website: 
+                    <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
+                    or on Facebook: 
+                    <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
+                </p>
+                <p>We truly appreciate your continued business and partnership.</p>
+                <br>
+                <p>Sincerely,</p>
                 <p>Excel Technologies Ltd.</p>
+                <p style="color: #888; font-size: 12px; font-style: italic;">
+                    This is a system generated email. Please do not reply, as responses to this email are not monitored.
+                </p>
             """
-            frappe.sendmail(
-                recipients=[email_id],
-                subject=subject,
-                message=message
-            )
+            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+        if method == "on_cancel":
+            subject = "[ETL] Cancellation Alert"
+            message = f"""
+            <p>Dear <b>{party_name}</b>,</p>
+            <p>{voucher_no} amounting Taka <b>{(paid_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
+            <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
+            {f'at <b>{sales_person_mobile_no}</b>' if sales_person_mobile_no  else ''}
+            {f'or email' if sales_person_email and sales_person_mobile_no else ''}
+            {f'at <b>{sales_person_email}</b>' if sales_person_email  else ''} </p>
+            <p>For more information on our products and services, please visit our website: 
+                <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
+                or on Facebook: 
+                <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
+            </p>
+            <p>We truly appreciate your continued business and partnership.</p>
+            <br>
+            <p>Sincerely,</p>
+            <p>Excel Technologies Ltd.</p>
+            <p style="color: #888; font-size: 12px; font-style: italic;">
+                This is a system generated email. Please do not reply, as responses to this email are not monitored.
+            </p>
+            """
+
+            frappe.sendmail(recipients=email_id, subject=subject, message=message)
 
 
 
-def get_customer_outstanding_balance(customer_name):
-    total_debit_credit = frappe.db.sql(
-        """
-        SELECT 
-            SUM(debit_in_account_currency) AS total_debit,
-            SUM(credit_in_account_currency) AS total_credit
-        FROM 
-            `tabGL Entry`
-        WHERE 
-            party_type = 'Customer' AND party = %s
-        """, 
-        (customer_name,),
-        as_dict=True
-    )
-    
-    # Calculate the total outstanding balance
-    total_debit = total_debit_credit[0].get('total_debit') or 0
-    total_credit = total_debit_credit[0].get('total_credit') or 0
-    outstanding_balance = total_debit - total_credit
-    
-    return outstanding_balance
-def format_in_bangladeshi_currency(amount):
-    # Set the locale for Indian numbering system
-    # Format the number using locale
-    formatted_amount = locale.format_string("%d", amount, grouping=True)
-    
-    return formatted_amount

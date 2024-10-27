@@ -90,22 +90,26 @@ doctype_js = {
 
 doc_events = {
 	"Customer": {
-		# "on_submit": "excel_erpnext.doc_events.customer.customer.send_notification",
+		"after_insert": "excel_erpnext.doc_events.customer.customer.send_notification",
+		
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
  "Sales Invoice": {
 		"on_submit": "excel_erpnext.doc_events.sales_invoice.sales_invoice.send_notification",
+		"on_cancel": "excel_erpnext.doc_events.sales_invoice.sales_invoice.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
 	"Payment Entry": {
-		"on_update": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
+		"on_submit": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
+		"on_cancel": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
 	"Journal Entry": {
 		"on_submit": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
+		"on_cancel": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	}
