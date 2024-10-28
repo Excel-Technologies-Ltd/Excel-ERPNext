@@ -38,7 +38,7 @@ def send_sms_notification(doc,method):
             message = f"{party_name}, Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{outstanding_balance}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel":
-            message = f"Dear {party_name}, {voucher_no} has been canceled. Balance Tk. {(outstanding_balance)}/=. [ETL]"
+            message = f"Dear {party_name}, {voucher_no} amounting Tk.{paid_amount}/= has been canceled. Balance Tk. {(outstanding_balance)}/=. [ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):

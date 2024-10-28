@@ -46,13 +46,13 @@ def send_sms_notification(doc, method, account):
     credit_amount=account.get('credit_in_account_currency')
     debit_amount=account.get('debit_in_account_currency')
     excel_product_team= account.get('excel_product_team')
-    user_remarks= doc.custom_scheme_name 
+    user_remarks= doc.excel_scheme_name 
     posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
     posting_time = format_time_to_ampm(doc.modified)
     # Condition: Rebate
     if account.get('is_rebate')== "Rebate":
         message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no} to {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
         if method == "on_cancel":
@@ -61,7 +61,7 @@ def send_sms_notification(doc, method, account):
     # Condition: Ledger Debit
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
         message = f"{customer_name},Tk.{debit_amount}/= adjusted by {voucher_no} for {user_remarks} on {posting_date}{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{debit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
@@ -70,7 +70,7 @@ def send_sms_notification(doc, method, account):
     # Condition: Credit Note
     if doc.voucher_type == 'Credit Note':
         message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no}“{excel_product_team}” on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
@@ -80,7 +80,7 @@ def send_sms_notification(doc, method, account):
     # Condition: Receive
     if doc.voucher_type == 'Receive Entry':
         message = f"{customer_name},Tk.{credit_amount}/= received by {voucher_no} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
@@ -104,7 +104,7 @@ def send_email_notification(doc, method, account):
     credit_amount=account.get('credit_in_account_currency')
     debit_amount=account.get('debit_in_account_currency')
     excel_product_team= account.get('excel_product_team')
-    user_remarks= doc.custom_scheme_name
+    user_remarks= doc.excel_scheme_name
     posting_date = format_date_to_custom(doc.posting_date, need_year=True) if method == "on_submit" else format_date_to_custom_cancel(doc.modified, need_year=True)
     posting_time = format_time_to_ampm(doc.modified ,is_mail=True)
 

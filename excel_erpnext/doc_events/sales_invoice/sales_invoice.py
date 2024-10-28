@@ -41,10 +41,10 @@ def send_sms_notification(doc,method):
             send_sms_frappe(mobile_number,message,success_msg=False)
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"Dear {customer}, {voucher_no} has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"Dear {customer}, {voucher_no} has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
 
         
