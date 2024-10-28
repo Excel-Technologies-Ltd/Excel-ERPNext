@@ -54,6 +54,8 @@ def send_email_notification(doc,method):
             brand_list = ""
         else:
             brand_list = f" against the [{', '.join(brands)}]"
+        pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Payment Notify", file_name=f"{doc.name}.pdf")
+
         outstanding_balance = customer_details.get('outstanding_balance')
         voucher_no = doc.name
         mode_of_payment = doc.mode_of_payment
@@ -86,7 +88,8 @@ def send_email_notification(doc,method):
                     This is a system generated email. Please do not reply, as responses to this email are not monitored.
                 </p>
             """
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+           
+            frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] )
         if method == "on_cancel":
             subject = "[ETL] Cancellation Alert"
             message = f"""

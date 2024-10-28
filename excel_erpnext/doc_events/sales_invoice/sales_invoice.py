@@ -59,6 +59,7 @@ def send_email_notification(doc,method):
     voucher_no = doc.name
     bill_amount = doc.grand_total
     return_voucher = doc.return_against
+    pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Sales Invoice", file_name=f"{doc.name}.pdf")
     posting_date = format_date_to_custom(doc.posting_date ,need_year=True) if method == "on_submit" else format_date_to_custom_cancel(doc.modified ,need_year=True)
     sales_person_email = customer_details.get('sales_person_email')
     sales_person_name = customer_details.get('sales_person_name')
@@ -87,7 +88,7 @@ def send_email_notification(doc,method):
                 This is a system generated email. Please do not reply, as responses to this email are not monitored.
                 </p>
             """
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
            
         if doc.name.startswith(('rinv', 'RINV')):
             subject = "[ETL] Sales Return Notification"
@@ -112,7 +113,7 @@ def send_email_notification(doc,method):
                 </p>
                 
             """
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
         # frappe.sendmail(
         #     recipients=[email_id],
         #     subject=subject,

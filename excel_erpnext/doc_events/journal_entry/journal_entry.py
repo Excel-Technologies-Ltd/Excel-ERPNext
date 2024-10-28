@@ -6,6 +6,7 @@ def send_notification(doc, method=None):
     accounts=doc.accounts
     account_condition_met = any(entry.get("account") == "3020702 - Provision for Sales Rebate & Benefit - ETL" for entry in accounts)
     customer_condition_met = any(entry.get("party_type") == "Customer" for entry in accounts)
+
     if account_condition_met and customer_condition_met:
         modified_accounts = [
             {**entry.as_dict(), "is_rebate": "Rebate"} if entry.party_type == "Customer" else entry.as_dict()
@@ -107,6 +108,8 @@ def send_email_notification(doc, method, account):
     user_remarks= doc.excel_scheme_name
     posting_date = format_date_to_custom(doc.posting_date, need_year=True) if method == "on_submit" else format_date_to_custom_cancel(doc.modified, need_year=True)
     posting_time = format_time_to_ampm(doc.modified ,is_mail=True)
+    pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Journal Entry", file_name=f"{doc.name}.pdf")
+
 
 
 
@@ -154,7 +157,7 @@ def send_email_notification(doc, method, account):
         """
         # frappe.sendmail(recipients=[email_id], subject=subject, message=message)
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
@@ -202,7 +205,7 @@ def send_email_notification(doc, method, account):
             </p>
             """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
@@ -251,7 +254,7 @@ def send_email_notification(doc, method, account):
             </p>
             """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
@@ -300,7 +303,7 @@ def send_email_notification(doc, method, account):
             </p>
         """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message)
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
