@@ -9,7 +9,6 @@ def send_notification(doc, method=None):
         sms_enabled = bool(settings.excel_sms)
         notification_permission = get_notification_permission(doc.name)
         if notification_permission['sms'] and sms_enabled:
-            frappe.msgprint(f"Sending SMS Notification for {method}")
             send_sms_notification(doc, method)
         if notification_permission['email']:
             send_email_notification(doc, method)
@@ -20,20 +19,17 @@ def send_notification(doc, method=None):
                 send_email_notification(doc, method)
 
     except frappe.DoesNotExistError:
-        frappe.msgprint("ArcApps Alert Settings not found.")
+        print("ArcApps Alert Settings not found.")
     except Exception as e:
         frappe.log_error(message=f"Error in send_notification: {str(e)}", title="Notification Error")
 
 
 def send_sms_notification(doc, method):
-    frappe.msgprint(f"Sending SMS Notification for {doc.name}")
-    customer_details = get_customer_details(doc.name)
-    frappe.msgprint(frappe.as_json(customer_details))  # Log customer details for debugging
+    customer_details = get_customer_details(doc.name)  # Log customer details for debugging
     notified_phone_no_list = customer_details.get('notified_phone_no_list')
     if len(notified_phone_no_list) == 0:
         return
     if isinstance(notified_phone_no_list, list):
-        frappe.msgprint(f"Length of notified_phone_no_list: {len(notified_phone_no_list)}")
         if len(notified_phone_no_list) == 0:
             # frappe.msgprint("The phone number list is empty.")
             return
@@ -52,13 +48,9 @@ def send_sms_notification(doc, method):
 
         
         for phone_no in notified_phone_no_list:
-            frappe.msgprint(f"Sending SMS to {phone_no}")
             send_sms([phone_no], message)
-            frappe.msgprint(f"SMS sent to {phone_no}")
-
 
 def send_email_notification(doc, method=None):
-    frappe.msgprint(f"Sending Email Notification for {doc.name}")
     customer_details = get_customer_details(doc.name)
     notified_email_list = customer_details.get('notified_email_list')
     if len(notified_email_list) == 0:
@@ -67,15 +59,12 @@ def send_email_notification(doc, method=None):
     if isinstance(notified_email_list, list):
         frappe.msgprint(f"Notified Email List: {notified_email_list}")
         if len(notified_email_list) == 0:
-            frappe.msgprint("The email list is empty.")
             return
     else:
         frappe.msgprint("Notified email list is not an array.")
         return
 
     if method == "after_insert":
-        frappe.msgprint(f"Sending Email to {notified_email_list}")
-
         sales_person_name = customer_details.get('sales_person_name')
         sales_person_mobile_no = customer_details.get('sales_person_mobile_no')
         sales_person_email = customer_details.get('sales_person_email')
