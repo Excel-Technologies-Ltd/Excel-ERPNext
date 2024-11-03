@@ -75,7 +75,6 @@ def get_notified_email(primary_contact):
 
 
 def get_customer_outstanding_balance(customer_name):
-    frappe.msgprint(customer_name)
     total_debit_credit = frappe.db.sql(
         """
         SELECT 
@@ -173,3 +172,15 @@ def format_date_to_custom_cancel(date_input, need_year=False):
         # Handle exceptions (e.g., invalid date format)
         print(f"Error formatting date: {e}")
         return None
+def get_attachment_permission(doc_name):
+    if doc_name == "Journal Entry": 
+        settings = frappe.get_doc("ArcApps Alert Settings")
+        return bool(settings.journal_att)
+    elif doc_name == "Payment Entry":
+        settings = frappe.get_doc("ArcApps Alert Settings")
+        return bool(settings.payment_att)
+    elif doc_name == "Sales Invoice":
+        settings = frappe.get_doc("ArcApps Alert Settings")
+        return bool(settings.invoice_att)
+    else:
+        return False

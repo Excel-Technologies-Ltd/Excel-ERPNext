@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission
 def send_notification(doc, method=None):
     
     if not doc.name.startswith(('sinv', 'SINV','rinv','RINV')):
@@ -49,7 +49,7 @@ def send_sms_notification(doc,method):
 
         
 def send_email_notification(doc,method):
-
+    attachment_permission = get_attachment_permission(doc.doctype)
     customer_details = get_customer_details(doc.customer,outstanding_balance=True)
     customer=doc.customer_name
     email_id = customer_details.get('notified_email_list')
@@ -88,7 +88,7 @@ def send_email_notification(doc,method):
                 This is a system generated email. Please do not reply, as responses to this email are not monitored.
                 </p>
             """
-            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
            
         if doc.name.startswith(('rinv', 'RINV')):
             subject = "[ETL] Sales Return Notification"
@@ -113,7 +113,7 @@ def send_email_notification(doc,method):
                 </p>
                 
             """
-            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
         # frappe.sendmail(
         #     recipients=[email_id],
         #     subject=subject,

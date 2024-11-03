@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission
 def send_notification(doc, method=None):
     
     if doc.payment_type != "Receive":
@@ -35,7 +35,7 @@ def send_sms_notification(doc,method):
         posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
         posting_time = format_time_to_ampm(doc.modified)
         if method == "on_submit":
-            message = f"{party_name}, Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{outstanding_balance}/=[ETL]"
+            message = f"{party_name},Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{outstanding_balance}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel":
             message = f"Dear {party_name}, {voucher_no} amounting Tk.{paid_amount}/= has been canceled. Balance Tk. {(outstanding_balance)}/=. [ETL]"
@@ -43,6 +43,7 @@ def send_sms_notification(doc,method):
         
 def send_email_notification(doc,method):
     if doc.party_type == "Customer":
+        attachment_permission = get_attachment_permission(doc.doctype)
         customer_details = get_customer_details(doc.party,outstanding_balance=True)
         party_name=doc.party_name
         email_id = customer_details.get('notified_email_list')
@@ -53,7 +54,7 @@ def send_email_notification(doc,method):
         if len(brands) == 0:
             brand_list = ""
         else:
-            brand_list = f" against the [{', '.join(brands)}]"
+            brand_list = f" against [{', '.join(brands)}]"
         pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Payment Notify", file_name=f"{doc.name}.pdf")
 
         outstanding_balance = customer_details.get('outstanding_balance')
@@ -89,7 +90,7 @@ def send_email_notification(doc,method):
                 </p>
             """
            
-            frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] )
+            frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             subject = "[ETL] Cancellation Alert"
             message = f"""

@@ -10,7 +10,12 @@
   "customer_alerts_section",
   "excel_sms",
   "column_break_bwbao",
-  "excel_email"
+  "excel_email",
+  "attachment_upload_section",
+  "invoice_att",
+  "payment_att",
+  "column_break_2hemo",
+  "journal_att"
  ],
  "fields": [
   {
@@ -33,12 +38,41 @@
    "fieldname": "excel_email",
    "fieldtype": "Check",
    "label": "Via Email"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.excel_email==1",
+   "fieldname": "attachment_upload_section",
+   "fieldtype": "Section Break",
+   "label": "Attachment Upload (Email)"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoice_att",
+   "fieldtype": "Check",
+   "label": "Invoice Attachment"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_att",
+   "fieldtype": "Check",
+   "label": "Payment Attachment"
+  },
+  {
+   "fieldname": "column_break_2hemo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "journal_att",
+   "fieldtype": "Check",
+   "label": "Journal Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-22 10:59:54.514597",
+ "modified": "2024-11-03 11:34:13.709804",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

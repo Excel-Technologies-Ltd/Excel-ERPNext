@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission
 def send_notification(doc, method=None):
     
     accounts=doc.accounts
@@ -61,7 +61,7 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Ledger Debit
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        message = f"{customer_name},Tk.{debit_amount}/= adjusted by {voucher_no} for {user_remarks} on {posting_date}{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
+        message = f"{customer_name},Tk.{debit_amount}/= adjusted by {voucher_no} for {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
         cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{debit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
@@ -89,6 +89,7 @@ def send_sms_notification(doc, method, account):
             send_sms_frappe(mobile_number, cancel_message,success_msg=False)
         return 
 def send_email_notification(doc, method, account):
+    attachment_permission = get_attachment_permission(doc.doctype)
     account_name = account.get('account')
     party_type = account.get('party_type')
     customer = account.get('party')
@@ -157,7 +158,7 @@ def send_email_notification(doc, method, account):
         """
         # frappe.sendmail(recipients=[email_id], subject=subject, message=message)
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
@@ -205,7 +206,7 @@ def send_email_notification(doc, method, account):
             </p>
             """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
@@ -254,7 +255,7 @@ def send_email_notification(doc, method, account):
             </p>
             """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
@@ -303,7 +304,7 @@ def send_email_notification(doc, method, account):
             </p>
         """
         if method == "on_submit":
-            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
