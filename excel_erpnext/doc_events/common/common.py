@@ -1,10 +1,10 @@
 import frappe
-import locale
+# import locale
 from datetime import datetime
-try:
-    locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+# try:
+#     locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
+# except locale.Error:
+#     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 def get_customer_details(customer_name_id,outstanding_balance=False):
     customer = frappe.get_doc("Customer", customer_name_id)
@@ -98,10 +98,26 @@ def get_customer_outstanding_balance(customer_name):
 
 
 def format_in_bangladeshi_currency(amount):
-    # Set the locale for Indian numbering system
-    # Format the number using locale
-    formatted_amount = locale.format_string("%d", amount, grouping=True)
-    
+    amount_str = str(int(amount))  # Convert to string and remove decimal if it's a whole number
+    length = len(amount_str)
+
+    # If the number is less than or equal to 3 digits, return as is
+    if length <= 3:
+        return amount_str
+
+    # Format last three digits, then add commas in the Indian numbering style
+    formatted_amount = amount_str[-3:]  # Last three digits
+    remaining_digits = amount_str[:-3]  # Digits before the last three
+
+    # Group by 2 digits from the end of remaining_digits
+    while len(remaining_digits) > 2:
+        formatted_amount = remaining_digits[-2:] + ',' + formatted_amount
+        remaining_digits = remaining_digits[:-2]
+
+    # Add the remaining part, which is 1 or 2 digits
+    if remaining_digits:
+        formatted_amount = remaining_digits + ',' + formatted_amount
+
     return formatted_amount
 
 
