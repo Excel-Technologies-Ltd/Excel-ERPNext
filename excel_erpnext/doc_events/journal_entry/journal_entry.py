@@ -52,8 +52,8 @@ def send_sms_notification(doc, method, account):
     posting_time = format_time_to_ampm(doc.modified)
     # Condition: Rebate
     if account.get('is_rebate')== "Rebate":
-        message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no} to {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no} to {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
         if method == "on_cancel":
@@ -61,8 +61,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Ledger Debit
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        message = f"{customer_name},Tk.{debit_amount}/= adjusted by {voucher_no} for {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{debit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        message = f"{customer_name},Tk.{debit_amount}/= adjusted by {voucher_no} for {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{debit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
@@ -70,8 +70,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Credit Note
     if doc.voucher_type == 'Credit Note':
-        message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no}“{excel_product_team}” on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        message = f"{customer_name},Tk.{credit_amount}/= adjusted by {voucher_no}“{excel_product_team}” on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
@@ -80,8 +80,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Receive
     if doc.voucher_type == 'Receive Entry':
-        message = f"{customer_name},Tk.{credit_amount}/= received by {voucher_no} on {posting_date},{posting_time}.Balance:Tk.{outstanding_balance}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+        message = f"{customer_name},Tk.{credit_amount}/= received by {voucher_no} on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, {voucher_no} amounting Tk.{credit_amount}/= has been canceled. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
@@ -89,7 +89,12 @@ def send_sms_notification(doc, method, account):
             send_sms_frappe(mobile_number, cancel_message,success_msg=False)
         return 
 def send_email_notification(doc, method, account):
-    attachment_permission = get_attachment_permission(doc.doctype)
+    
+    territory= doc.excel_territory
+    if territory == "CORPORATE" or territory == "TENDER":
+        attachment_permission = get_attachment_permission("Journal Attachment (Corporate)")
+    else:
+        attachment_permission = get_attachment_permission(doc.doctype)
     account_name = account.get('account')
     party_type = account.get('party_type')
     customer = account.get('party')
@@ -115,10 +120,10 @@ def send_email_notification(doc, method, account):
 
 
     if account.get('is_rebate')== "Rebate":
-        subject = "[ETL] Ledger Transaction Notification"
-        message = f"""Dear <b>{customer_name}</b>,<br>
-        We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with {voucher_no} against “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.
-        <br><br>
+        subject = "ETL - Ledger Transaction Notification"
+        message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
+        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with {voucher_no} against “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
         {f'or email' if sales_person_email and sales_person_mobile_no else ''}
@@ -136,8 +141,9 @@ def send_email_notification(doc, method, account):
             This is a system generated email. Please do not reply, as responses to this email are not monitored.
             </p>
         """
-        cancel_subject = "[ETL] Cancellation Alert"
-        cancel_message = f"""Dear <b>{customer_name}</b>,<br>
+        cancel_subject = "ETL - Cancellation Notification"
+        cancel_message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
         <p>{voucher_no} amounting Taka <b>{(debit_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
@@ -163,10 +169,10 @@ def send_email_notification(doc, method, account):
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        subject = "[ETL] Ledger Transaction Notification"
-        message = f"""Dear <b>{customer_name}</b>,<br>
-        We have adjusted Taka <b>{debit_amount}/=</b> to your ledger with {voucher_no} due to “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.
-        <br><br>
+        subject = "ETL - Ledger Transaction Notification"
+        message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
+        <p>We have adjusted Taka <b>{debit_amount}/=</b> to your ledger with {voucher_no} due to “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
         {f'or email' if sales_person_email and sales_person_mobile_no else ''}
@@ -184,7 +190,7 @@ def send_email_notification(doc, method, account):
             This is a system generated email. Please do not reply, as responses to this email are not monitored.
             </p>
         """
-        cancel_subject = "[ETL] Cancellation Alert"
+        cancel_subject = "ETL - Cancellation Alert"
         cancel_message  = f"""
             <p>Dear <b>{customer_name}</b>,</p>
             <p>{voucher_no} amounting Taka <b>{(debit_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
@@ -212,10 +218,10 @@ def send_email_notification(doc, method, account):
         return 
     # Static Email Content for Each Condition
     if doc.voucher_type == 'Credit Note':
-        subject = "[ETL] Ledger Transaction Notification"
-        message = f"""Dear <b>{customer_name}</b>,<br>
-        We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with credit note {voucher_no} against “{excel_product_team}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.
-        <br><br>
+        subject = "ETL - Ledger Transaction Notification"
+        message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
+        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with credit note {voucher_no} against “{excel_product_team}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
         {f'or email' if sales_person_email and sales_person_mobile_no else ''}
@@ -233,7 +239,7 @@ def send_email_notification(doc, method, account):
             This is a system generated email. Please do not reply, as responses to this email are not monitored.
             </p>
         """
-        cancel_subject = "[ETL] Cancellation Alert"
+        cancel_subject = "ETL - Cancellation Alert"
         cancel_message  = f"""
             <p>Dear <b>{customer_name}</b>,</p>
             <p>{voucher_no} amounting Taka <b>{(credit_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
@@ -261,9 +267,10 @@ def send_email_notification(doc, method, account):
         return 
     if doc.voucher_type == 'Receive Entry':
         # on_submit
-        subject = "[ETL] Payment Notification"
-        message = f"""Dear <b>{customer_name}</b>,<br>
-        We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with {voucher_no} on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.
+        subject = "ETL - Payment Notification"
+        message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
+        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger with {voucher_no} on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
         {f'or email' if sales_person_email and sales_person_mobile_no else ''}
@@ -283,8 +290,9 @@ def send_email_notification(doc, method, account):
         """
         # frappe.sendmail(recipients=[email_id], subject=subject, message=message)
         # on_cancel
-        cancel_subject = "[ETL] Cancellation Alert"
-        cancel_message = f"""Dear <b>{customer_name}</b>,<br>
+        cancel_subject = "ETL - Cancellation Alert"
+        cancel_message = f"""
+        <p>Dear <b>{customer_name}</b>,</p>
         <p>{voucher_no} amounting Taka <b>{(credit_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
         <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
         {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}

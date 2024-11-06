@@ -15,7 +15,8 @@
   "invoice_att",
   "payment_att",
   "column_break_2hemo",
-  "journal_att"
+  "journal_att",
+  "corp_journal_att"
  ],
  "fields": [
   {
@@ -66,13 +67,19 @@
    "default": "0",
    "fieldname": "journal_att",
    "fieldtype": "Check",
-   "label": "Journal Attachment"
+   "label": "Journal Attachment (Channel)"
+  },
+  {
+   "default": "0",
+   "fieldname": "corp_journal_att",
+   "fieldtype": "Check",
+   "label": "Journal Attachment (Corporate)"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-11-03 11:34:13.709804",
+ "modified": "2024-11-06 13:11:10.177659",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

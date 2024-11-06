@@ -35,10 +35,10 @@ def send_sms_notification(doc,method):
         posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
         posting_time = format_time_to_ampm(doc.modified)
         if method == "on_submit":
-            message = f"{party_name},Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{outstanding_balance}/=[ETL]"
+            message = f"{party_name},Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel":
-            message = f"Dear {party_name}, {voucher_no} amounting Tk.{paid_amount}/= has been canceled. Balance Tk. {(outstanding_balance)}/=. [ETL]"
+            message = f"Dear {party_name}, {voucher_no} amounting Tk.{paid_amount}/= has been canceled. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=. [ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):
@@ -68,7 +68,7 @@ def send_email_notification(doc,method):
         sales_person_mobile_no = customer_details.get('sales_person_mobile_no')
         posting_time = format_time_to_ampm(doc.modified,is_mail=True)
         if method == "on_submit":
-            subject = "[ETL] Payment Notification"
+            subject = "ETL - Payment Notification"
             message = f"""
                 <p>Dear <b>{party_name}</b>,</p>
                 <p>Thank you for your payment of Taka <b>{paid_amount}/=</b> via {voucher_no} {brand_list} on {posting_date} at {posting_time} by <b>[{mode_of_payment}]</b>. Your current outstanding balance is Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
@@ -92,7 +92,7 @@ def send_email_notification(doc,method):
            
             frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
-            subject = "[ETL] Cancellation Alert"
+            subject = "ETL - Cancellation Notification"
             message = f"""
             <p>Dear <b>{party_name}</b>,</p>
             <p>{voucher_no} amounting Taka <b>{(paid_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>

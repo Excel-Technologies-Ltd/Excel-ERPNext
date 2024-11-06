@@ -48,7 +48,7 @@ def send_sms_notification(doc, method):
 
         
         for phone_no in notified_phone_no_list:
-            send_sms([phone_no], message)
+            send_sms([phone_no], message,success_msg=False)
 
 def send_email_notification(doc, method=None):
     customer_details = get_customer_details(doc.name)
@@ -57,11 +57,11 @@ def send_email_notification(doc, method=None):
         return
     # Check if the email list is valid and not empty
     if isinstance(notified_email_list, list):
-        frappe.msgprint(f"Notified Email List: {notified_email_list}")
+        # frappe.msgprint(f"Notified Email List: {notified_email_list}")
         if len(notified_email_list) == 0:
             return
     else:
-        frappe.msgprint("Notified email list is not an array.")
+        # frappe.msgprint("Notified email list is not an array.")
         return
 
     if method == "after_insert":

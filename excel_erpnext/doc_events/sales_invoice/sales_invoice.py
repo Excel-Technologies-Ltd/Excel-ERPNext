@@ -34,17 +34,17 @@ def send_sms_notification(doc,method):
     posting_time = format_time_to_ampm(doc.modified)
     if method == "on_submit":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"{customer}, {voucher_no} amounting Tk.{bill_amount}/= generated on {posting_date},{posting_time}. Balance:Tk.{outstanding_balance}/=[ETL]"
+            message = f"{customer}, {voucher_no} amounting Tk.{bill_amount}/= generated on {posting_date},{posting_time}. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"{customer}, Tk.{abs(bill_amount)}/= sales returned for {return_voucher} on {posting_date},{posting_time}. Balance:Tk.{outstanding_balance}/=[ETL]"
+            message = f"{customer}, Tk.{abs(bill_amount)}/= sales returned for {return_voucher} on {posting_date},{posting_time}. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance)}/=.[ETL]"
+            message = f"Dear {customer}, {voucher_no} amounting Tk.{bill_amount}/= has been canceled. Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
 
         
@@ -67,9 +67,9 @@ def send_email_notification(doc,method):
     posting_time = format_time_to_ampm(doc.modified,is_mail=True)
     if method == "on_submit":
         if doc.name.startswith(('sinv', 'SINV')):
-            subject = "[ETL] Sales Notification"
+            subject = "ETL - Sales Invoice Notification"
             message = f"""
-                <p>Dear <b>{customer}</b>,</p>
+            <p>Dear <b>{customer}</b>,</p>
             <p>We would like to inform you that a new invoice {voucher_no} for the amount of Taka <b>{bill_amount}/=</b> has been generated on {posting_date} at {posting_time}. Your current outstanding balance is Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
             <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
             {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
@@ -91,7 +91,7 @@ def send_email_notification(doc,method):
             frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
            
         if doc.name.startswith(('rinv', 'RINV')):
-            subject = "[ETL] Sales Return Notification"
+            subject = "ETL - Sales Return Notification"
             message = f"""
                 <p>Dear <b>{customer}</b>,</p>
                 <p>We have adjusted Taka <b>{abs(bill_amount)}/=</b> to your ledger by returning against sales invoice {return_voucher} on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
@@ -121,7 +121,7 @@ def send_email_notification(doc,method):
         # )
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
-            subject = "[ETL] Cancellation Alert"
+            subject = "ETL - Cancellation Notification"
             message = f"""
                 <p>Dear <b>{customer}</b>,</p>
                 <p>{voucher_no} amounting Taka <b>{abs(bill_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
@@ -145,7 +145,7 @@ def send_email_notification(doc,method):
             frappe.sendmail(recipients=email_id, subject=subject, message=message)
 
         if doc.name.startswith(('rinv', 'RINV')):
-            subject = "[ETL] Cancellation Alert"
+            subject = "ETL - Cancellation Notification"
             message = f"""
             <p>Dear <b>{customer}</b>,</p>
             <p>{voucher_no} amounting Taka <b>{abs(bill_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>

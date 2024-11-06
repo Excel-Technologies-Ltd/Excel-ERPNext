@@ -97,26 +97,52 @@ def get_customer_outstanding_balance(customer_name):
     return outstanding_balance
 
 
-def format_in_bangladeshi_currency(amount):
-    amount_str = str(int(amount))  # Convert to string and remove decimal if it's a whole number
-    length = len(amount_str)
+def format_in_bangladeshi_currency(amount, sms=False):
+    # Determine if the amount is negative
+    is_negative = amount < 0
+    if is_negative:
+        amount = abs(amount)  # Work with the positive version of the amount for formatting
+
+    # Convert to string and round only if sms is True
+    if sms:
+        amount = round(amount, 2)
+    amount_str = str(amount)
+    
+    # Handle decimal part if present (for cases with or without sms)
+    if '.' in amount_str:
+        whole_part, decimal_part = amount_str.split('.')
+        if sms:
+            decimal_part = decimal_part.ljust(2, '0')[:2]  # Ensure two decimal places
+    else:
+        whole_part = amount_str
+        decimal_part = None
+
+    length = len(whole_part)
 
     # If the number is less than or equal to 3 digits, return as is
     if length <= 3:
-        return amount_str
+        formatted_amount = amount_str if not sms or not decimal_part else f"{whole_part}.{decimal_part}"
+    else:
+        # Format last three digits, then add commas in the Bangladeshi style
+        formatted_amount = whole_part[-3:]  # Last three digits
+        remaining_digits = whole_part[:-3]  # Digits before the last three
 
-    # Format last three digits, then add commas in the Indian numbering style
-    formatted_amount = amount_str[-3:]  # Last three digits
-    remaining_digits = amount_str[:-3]  # Digits before the last three
+        # Group by 2 digits from the end of remaining_digits
+        while len(remaining_digits) > 2:
+            formatted_amount = remaining_digits[-2:] + ',' + formatted_amount
+            remaining_digits = remaining_digits[:-2]
 
-    # Group by 2 digits from the end of remaining_digits
-    while len(remaining_digits) > 2:
-        formatted_amount = remaining_digits[-2:] + ',' + formatted_amount
-        remaining_digits = remaining_digits[:-2]
+        # Add the remaining part, which is 1 or 2 digits
+        if remaining_digits:
+            formatted_amount = remaining_digits + ',' + formatted_amount
 
-    # Add the remaining part, which is 1 or 2 digits
-    if remaining_digits:
-        formatted_amount = remaining_digits + ',' + formatted_amount
+    # Append decimal part if present
+    if decimal_part:
+        formatted_amount = f"{formatted_amount}.{decimal_part}"
+
+    # Add negative sign back if needed
+    if is_negative:
+        formatted_amount = '-' + formatted_amount
 
     return formatted_amount
 
@@ -198,5 +224,8 @@ def get_attachment_permission(doc_name):
     elif doc_name == "Sales Invoice":
         settings = frappe.get_doc("ArcApps Alert Settings")
         return bool(settings.invoice_att)
+    elif doc_name == "Journal Attachment (Corporate)":
+        settings = frappe.get_doc("ArcApps Alert Settings")
+        return bool(settings.corp_journal_att)
     else:
         return False
