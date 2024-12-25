@@ -17,7 +17,9 @@
   "under_production",
   "column_break_0kred",
   "proposed_new_order_qty",
-  "suggested__order"
+  "suggested__order",
+  "column_break_dzk23",
+  "fob"
  ],
  "fields": [
   {
@@ -89,11 +91,20 @@
    "fieldname": "suggested__order",
    "fieldtype": "Float",
    "label": "Suggested  order"
+  },
+  {
+   "fieldname": "column_break_dzk23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fob",
+   "fieldtype": "Float",
+   "label": "FOB"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-02 14:52:58.095983",
+ "modified": "2024-12-12 18:30:36.820931",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Excel PSI",

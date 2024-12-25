@@ -1,5 +1,7 @@
 import frappe
 # import locale
+from frappe.utils import get_url
+
 from datetime import datetime
 # try:
 #     locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
@@ -9,6 +11,7 @@ from datetime import datetime
 def get_customer_details(customer_name_id,outstanding_balance=False):
     customer = frappe.get_doc("Customer", customer_name_id)
     customer_name = customer.customer_name
+    is_frozen=customer.is_frozen
     # Check sales team presence
     sales_team_name = (
         customer.sales_team[0].sales_person
@@ -44,7 +47,9 @@ def get_customer_details(customer_name_id,outstanding_balance=False):
             'notified_phone_no_list':customer_primary_contact_phone_no,
             'notified_email_list':customer_primary_contact_email,
             'outstanding_balance':customer_outstanding_balance,
-            'customer_name':customer_name}
+            'customer_name':customer_name,
+            'is_frozen':True if is_frozen else False
+            }
 
 
 def get_notified_mobile_no(primary_contact):
@@ -229,3 +234,89 @@ def get_attachment_permission(doc_name):
         return bool(settings.corp_journal_att)
     else:
         return False
+
+def get_cm_mail():
+    try:
+        # Fetch the settings document
+        settings = frappe.get_doc("ArcApps Alert Settings")
+        mail_list = settings.get("mail_list", [])
+        if not mail_list:
+            frappe.log_error("Mail list is empty or missing in ArcApps Alert Settings", "Missing Mail List")
+            return []
+        user_ids = [mail.get("user_email") for mail in mail_list if mail.get("user_email")]      
+        return user_ids
+
+    except Exception as e:
+        # Log the error for debugging
+        frappe.log_error(frappe.get_traceback(), "Error in get_cm_mail")
+        print(f"Error: {str(e)}")
+        return []
+    
+def send_cm_mail_from_payment_entry(doc):
+    settings = frappe.get_doc("ArcApps Alert Settings")
+    if not bool(settings.payment_entry_cm):
+        return
+    customer = doc.party
+    paid_amount = doc.paid_amount
+    customer_details = get_customer_details(customer,outstanding_balance=True)
+    is_frozen = customer_details.get('is_frozen')
+    if not is_frozen:
+        return
+    customer_name= customer_details.get('customer_name')
+    outstanding_balance= customer_details.get('outstanding_balance')
+    send_email_to_cm(customer,customer_name,paid_amount,outstanding_balance)
+    
+def send_cm_mail_from_journal_entry(customer):
+    settings = frappe.get_doc("ArcApps Alert Settings")
+    if not bool(settings.journal_entry_cm):
+        return    
+    account = customer.get('account')
+    party_type = customer.get('party_type')
+    party_name = customer.get('party')
+    
+    customer_details = get_customer_details(party_name, outstanding_balance=True)
+    is_frozen = customer_details.get('is_frozen')
+    if not is_frozen:
+        return
+    customer_name= customer_details.get('customer_name')
+    outstanding_balance= customer_details.get('outstanding_balance')
+    credit_amount = customer.get('credit_in_account_currency')
+    debit_amount = customer.get('debit_in_account_currency')
+    if credit_amount > 0:
+        paid_amount = credit_amount
+    else:
+        paid_amount = debit_amount
+    send_email_to_cm(party_name,customer_name,paid_amount,outstanding_balance,enrty_type='journal entry')
+
+
+
+def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_balance,enrty_type='payment entry'):
+    subject = 'Customer Unfreeze Alert'
+    base_url = get_url()
+    mail_list = get_cm_mail()
+    if len(mail_list) == 0:
+        return
+    # Generate the customer URL
+    customer_url = f"{base_url}/app/customer/{customer_code}"
+    message = f"""
+    <p>Dear Concern,</p>
+    
+    <p>A {enrty_type} has been received from <strong>{customer_name}</strong>. Kindly review and take the necessary action to unfreeze.</p>
+    
+    <p><strong>Details:</strong></p>
+    <ul>
+        <li>Customer: <a href="{customer_url}" target="_blank">{customer_code}</a></li>
+        <li>Customer Name: <strong>{customer_name}</strong></li>
+        <li>Paid Amount: <strong>{paid_amount} Taka</strong></li>
+        <li>Current Outstanding: <strong>{outstanding_balance} Taka</strong></li>
+    </ul>
+    
+    <p>Best Regards,<br>Team ETL</p>
+    """
+    
+    # Displaying the message for debug purposes (optional)
+    frappe.sendmail(
+        recipients=mail_list,
+        subject=subject,
+        message=message
+    )

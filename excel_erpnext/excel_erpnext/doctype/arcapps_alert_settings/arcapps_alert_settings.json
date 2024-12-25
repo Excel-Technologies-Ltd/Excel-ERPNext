@@ -16,7 +16,13 @@
   "payment_att",
   "column_break_2hemo",
   "journal_att",
-  "corp_journal_att"
+  "corp_journal_att",
+  "to_cm_team_section",
+  "payment_entry_cm",
+  "column_break_xycdz",
+  "journal_entry_cm",
+  "cm_mail_tab",
+  "mail_list"
  ],
  "fields": [
   {
@@ -74,12 +80,45 @@
    "fieldname": "corp_journal_att",
    "fieldtype": "Check",
    "label": "Journal Attachment (Corporate)"
+  },
+  {
+   "fieldname": "cm_mail_tab",
+   "fieldtype": "Tab Break",
+   "label": "CM Mail"
+  },
+  {
+   "fieldname": "mail_list",
+   "fieldtype": "Table",
+   "label": "Mail List",
+   "options": "Mail List"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "to_cm_team_section",
+   "fieldtype": "Section Break",
+   "label": "Unfreeze Alert"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_entry_cm",
+   "fieldtype": "Check",
+   "label": "Payment Entry (CM)"
+  },
+  {
+   "default": "0",
+   "fieldname": "journal_entry_cm",
+   "fieldtype": "Check",
+   "label": "Journal Entry (CM)"
+  },
+  {
+   "fieldname": "column_break_xycdz",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-11-06 13:11:10.177659",
+ "modified": "2024-12-14 15:36:09.677810",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

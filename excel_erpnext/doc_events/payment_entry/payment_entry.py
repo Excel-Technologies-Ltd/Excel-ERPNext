@@ -1,12 +1,13 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_email_to_cm,send_cm_mail_from_payment_entry
 def send_notification(doc, method=None):
     
     if doc.payment_type != "Receive":
         return
     if doc.party_type != "Customer":
         return
+    send_cm_mail_from_payment_entry(doc)
     settings = frappe.get_doc("ArcApps Alert Settings")
     sms_enabled = bool(settings.excel_sms)
     email_enabled = bool(settings.excel_email)
@@ -42,11 +43,15 @@ def send_sms_notification(doc,method):
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):
+    
     if doc.party_type == "Customer":
+        
+        
         attachment_permission = get_attachment_permission(doc.doctype)
         customer_details = get_customer_details(doc.party,outstanding_balance=True)
         party_name=doc.party_name
         email_id = customer_details.get('notified_email_list')
+
         if len(email_id) == 0:
             return
         custom_brand_wise_payments=doc.custom_brand_wise_payments
@@ -67,6 +72,7 @@ def send_email_notification(doc,method):
         sales_person_name = customer_details.get('sales_person_name')
         sales_person_mobile_no = customer_details.get('sales_person_mobile_no')
         posting_time = format_time_to_ampm(doc.modified,is_mail=True)
+        # need to change on_submit here
         if method == "on_submit":
             subject = "ETL - Payment Notification"
             message = f"""
@@ -89,8 +95,8 @@ def send_email_notification(doc,method):
                     This is a system generated email. Please do not reply, as responses to this email are not monitored.
                 </p>
             """
-           
             frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] if attachment_permission else [])
+                
         if method == "on_cancel":
             subject = "ETL - Cancellation Notification"
             message = f"""

@@ -1,0 +1,15 @@
+[
+ {
+  "buying": 0,
+  "countries": [],
+  "currency": "BDT",
+  "docstatus": 0,
+  "doctype": "Price List",
+  "enabled": 1,
+  "modified": "2024-12-16 20:53:29.038941",
+  "name": "Bottom Price",
+  "price_list_name": "Bottom Price",
+  "price_not_uom_dependent": 0,
+  "selling": 1
+ }
+]

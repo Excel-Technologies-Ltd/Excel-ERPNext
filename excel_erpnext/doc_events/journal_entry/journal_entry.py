@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission
+from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_cm_mail_from_journal_entry
 def send_notification(doc, method=None):
     
     accounts=doc.accounts
@@ -18,7 +18,9 @@ def send_notification(doc, method=None):
     customer_accounts = [account for account in modified_accounts if account.get("party_type") == "Customer" and account.get("party")]
     if len(customer_accounts) == 0:
         return
-    for account in customer_accounts:   
+    for account in customer_accounts:
+        if account.get('party_type') == "Customer" and account.get('account') == "10203 - Accounts Receivable - ETL":
+            send_cm_mail_from_journal_entry(account)   
         notification_permission = get_notification_permission(account.get('party'))
         settings = frappe.get_doc("ArcApps Alert Settings")
         sms_enabled = bool(settings.excel_sms)

@@ -102,13 +102,13 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Payment Entry": {
-		"on_submit": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
+		"on_update": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
 		"on_cancel": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
 	"Journal Entry": {
-		"on_submit": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
+		"on_update": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		"on_cancel": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
@@ -159,6 +159,20 @@ scheduler_events = {
 # 	"Task": "excel_erpnext.task.get_dashboard_data"
 # }
 
+# fixtures = [
+# 	{
+#         "dt": "Price List",
+#         "filters": [
+#             [
+#                 "name",
+#                 "in",
+#                 [
+#                   "Bottom Price"  
+#                 ],
+#             ],
+#         ]
+#     },
+# ]
 # fixtures = [
 # 	{
 #         "dt": "Custom Field",
@@ -272,17 +286,3 @@ scheduler_events = {
 fixtures = [  'Custom Field',  'Property Setter','Print Format']
 
 
-# fixtures = [
-# 	{
-#         "dt": "Print Format",
-#         "filters": [
-#             [
-#                 "name",
-#                 "in",
-#                 [
-#                   "Excel Estimate Print"  
-#                 ],
-#             ],
-#         ]
-#     },
-# ]

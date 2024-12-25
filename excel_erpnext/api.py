@@ -314,3 +314,26 @@ def render_html_image(doctype, name, format=None, doc=None, no_letterhead=0, lan
     frappe.local.response.type = "pdf"  # Set response type to HTML
 
     return
+
+@frappe.whitelist(allow_guest=True)
+def update_item_bottom_price(item_code, price):
+    try:
+        # Check if the item price exists for the specified criteria
+        check_item_price = frappe.db.exists('Item Price', {"item_code": item_code, "price_list": 'Bottom Price',"selling":1})
+        
+        if not check_item_price:
+            return {"status": "error", "message": "Item Price not found"}
+        
+        # Update the price if the item exists
+        frappe.db.set_value('Item Price', check_item_price, 'price_list_rate', price)
+        frappe.db.commit()
+        return {"status": "success", "message": "Price updated successfully","item":check_item_price}
+    
+    except frappe.exceptions.DoesNotExistError:
+        return {"status": "error", "message": "Item Price document does not exist"}
+    except frappe.exceptions.ValidationError as e:
+        return {"status": "error", "message": f"Validation error: {str(e)}"}
+    except Exception as e:
+        return {"status": "error", "message": f"An unexpected error occurred: {str(e)}"}
+
+    
