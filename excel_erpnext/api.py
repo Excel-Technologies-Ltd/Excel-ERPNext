@@ -322,7 +322,10 @@ def update_item_bottom_price(item_code, price):
         check_item_price = frappe.db.exists('Item Price', {"item_code": item_code, "price_list": 'Bottom Price',"selling":1})
         
         if not check_item_price:
-            return {"status": "error", "message": "Item Price not found"}
+            new_doc= frappe.get_doc({"doctype":"Item Price","item_code":item_code,"price_list":"Bottom Price","selling":1,"price_list_rate":price})
+            new_doc.insert()
+            frappe.db.commit()
+            return {"status": "success", "message": "Price created successfully","item":new_doc}
         
         # Update the price if the item exists
         frappe.db.set_value('Item Price', check_item_price, 'price_list_rate', price)

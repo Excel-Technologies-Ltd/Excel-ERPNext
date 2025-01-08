@@ -38,6 +38,7 @@ def get_customer_details(customer_name_id,outstanding_balance=False):
     excel_sales_person_mobile_no = get_sales_person_details[0]['excel_sales_person_mobile_no']
     excel_sales_person_email = get_sales_person_details[0]['excel_sales_person_email']
     customer_primary_contact = customer.customer_primary_contact
+    customer_fixed_limit = customer.excel_fixed_credit_limit
     customer_primary_contact_phone_no = get_notified_mobile_no(customer_primary_contact)
     customer_primary_contact_email = get_notified_email(customer_primary_contact)
     customer_outstanding_balance = get_customer_outstanding_balance(customer_name_id) if outstanding_balance else 0
@@ -47,6 +48,7 @@ def get_customer_details(customer_name_id,outstanding_balance=False):
             'notified_phone_no_list':customer_primary_contact_phone_no,
             'notified_email_list':customer_primary_contact_email,
             'outstanding_balance':customer_outstanding_balance,
+            'fixed_limit':customer_fixed_limit,
             'customer_name':customer_name,
             'is_frozen':True if is_frozen else False
             }
@@ -264,7 +266,8 @@ def send_cm_mail_from_payment_entry(doc):
         return
     customer_name= customer_details.get('customer_name')
     outstanding_balance= customer_details.get('outstanding_balance')
-    send_email_to_cm(customer,customer_name,paid_amount,outstanding_balance)
+    fixed_limit = customer_details.get('fixed_limit')
+    send_email_to_cm(customer,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='payment entry')
     
 def send_cm_mail_from_journal_entry(customer):
     settings = frappe.get_doc("ArcApps Alert Settings")
@@ -282,15 +285,16 @@ def send_cm_mail_from_journal_entry(customer):
     outstanding_balance= customer_details.get('outstanding_balance')
     credit_amount = customer.get('credit_in_account_currency')
     debit_amount = customer.get('debit_in_account_currency')
+    fixed_limit = customer_details.get('fixed_limit')
     if credit_amount > 0:
         paid_amount = credit_amount
     else:
         paid_amount = debit_amount
-    send_email_to_cm(party_name,customer_name,paid_amount,outstanding_balance,enrty_type='journal entry')
+    send_email_to_cm(party_name,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='journal entry')
 
 
 
-def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_balance,enrty_type='payment entry'):
+def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_balance,fixed_limit,enrty_type='payment entry'):
     subject = 'Customer Unfreeze Alert'
     base_url = get_url()
     mail_list = get_cm_mail()
@@ -307,8 +311,10 @@ def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_bala
     <ul>
         <li>Customer: <a href="{customer_url}" target="_blank">{customer_code}</a></li>
         <li>Customer Name: <strong>{customer_name}</strong></li>
-        <li>Paid Amount: <strong>{paid_amount} Taka</strong></li>
-        <li>Current Outstanding: <strong>{outstanding_balance} Taka</strong></li>
+        <li>Paid Amount: <strong>{format_in_bangladeshi_currency(paid_amount)} Taka</strong></li>
+        <li>Fixed Credit Limit: <strong>{format_in_bangladeshi_currency(fixed_limit)} Taka</strong></li>
+        <li>Current Outstanding: <strong>{format_in_bangladeshi_currency(outstanding_balance)} Taka</strong></li>
+        
     </ul>
     
     <p>Best Regards,<br>Team ETL</p>

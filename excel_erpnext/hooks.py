@@ -102,13 +102,13 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Payment Entry": {
-		"on_update": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
+		"on_submit": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
 		"on_cancel": "excel_erpnext.doc_events.payment_entry.payment_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
 	},
 	"Journal Entry": {
-		"on_update": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
+		"on_submit": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		"on_cancel": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
