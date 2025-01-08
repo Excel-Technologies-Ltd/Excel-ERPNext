@@ -19,7 +19,7 @@ def send_notification(doc, method=None):
     if len(customer_accounts) == 0:
         return
     for account in customer_accounts:
-        if account.get('party_type') == "Customer" and account.get('account') == "10203 - Accounts Receivable - ETL":
+        if method == 'on_submit' and account.get('party_type') == "Customer" and account.get('account') == "10203 - Accounts Receivable - ETL":
             send_cm_mail_from_journal_entry(account)   
         notification_permission = get_notification_permission(account.get('party'))
         settings = frappe.get_doc("ArcApps Alert Settings")
