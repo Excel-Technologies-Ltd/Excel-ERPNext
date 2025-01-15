@@ -8,7 +8,7 @@ def send_notification(doc, method=None):
     if doc.party_type != "Customer":
         return
     if method == "on_submit":
-        send_cm_mail_from_payment_entry(doc)
+        send_cm_mail_from_payment_entry(doc,doc.name)
     settings = frappe.get_doc("ArcApps Alert Settings")
     sms_enabled = bool(settings.excel_sms)
     email_enabled = bool(settings.excel_email)

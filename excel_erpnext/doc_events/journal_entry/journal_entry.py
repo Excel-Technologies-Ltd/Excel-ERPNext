@@ -20,7 +20,7 @@ def send_notification(doc, method=None):
         return
     for account in customer_accounts:
         if method == 'on_submit' and account.get('party_type') == "Customer" and account.get('account') == "10203 - Accounts Receivable - ETL":
-            send_cm_mail_from_journal_entry(account)   
+            send_cm_mail_from_journal_entry(account,doc.name)   
         notification_permission = get_notification_permission(account.get('party'))
         settings = frappe.get_doc("ArcApps Alert Settings")
         sms_enabled = bool(settings.excel_sms)

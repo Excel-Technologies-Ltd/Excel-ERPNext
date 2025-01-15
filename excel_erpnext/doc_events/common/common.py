@@ -254,7 +254,7 @@ def get_cm_mail():
         print(f"Error: {str(e)}")
         return []
     
-def send_cm_mail_from_payment_entry(doc):
+def send_cm_mail_from_payment_entry(doc ,voucher_name):
     settings = frappe.get_doc("ArcApps Alert Settings")
     if not bool(settings.payment_entry_cm):
         return
@@ -267,9 +267,9 @@ def send_cm_mail_from_payment_entry(doc):
     customer_name= customer_details.get('customer_name')
     outstanding_balance= customer_details.get('outstanding_balance')
     fixed_limit = customer_details.get('fixed_limit')
-    send_email_to_cm(customer,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='payment entry')
+    send_email_to_cm(customer,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='payment entry',voucher_name=voucher_name)
     
-def send_cm_mail_from_journal_entry(customer):
+def send_cm_mail_from_journal_entry(customer,voucher_name):
     settings = frappe.get_doc("ArcApps Alert Settings")
     if not bool(settings.journal_entry_cm):
         return    
@@ -289,12 +289,12 @@ def send_cm_mail_from_journal_entry(customer):
     if credit_amount > 0:
         paid_amount = credit_amount
     else:
-        paid_amount = debit_amount
-    send_email_to_cm(party_name,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='journal entry')
+        return
+    send_email_to_cm(party_name,customer_name,paid_amount,outstanding_balance,fixed_limit,enrty_type='journal entry',voucher_name=voucher_name)
 
 
 
-def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_balance,fixed_limit,enrty_type='payment entry'):
+def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_balance,fixed_limit,enrty_type='payment entry',voucher_name=None):
     subject = 'Customer Unfreeze Alert'
     base_url = get_url()
     mail_list = get_cm_mail()
@@ -302,10 +302,14 @@ def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_bala
         return
     # Generate the customer URL
     customer_url = f"{base_url}/app/customer/{customer_code}"
+    if enrty_type == 'payment entry':
+        voucher_url = f"{base_url}/app/payment-entry/{voucher_name}"
+    elif enrty_type == 'journal entry':
+        voucher_url = f"{base_url}/app/journal-entry/{voucher_name}"
     message = f"""
     <p>Dear Concern,</p>
     
-    <p>A {enrty_type} has been received from <strong>{customer_name}</strong>. Kindly review and take the necessary action to unfreeze.</p>
+    <p>A {enrty_type} <strong><a href="{voucher_url}" target="_blank">{voucher_name}</a></strong> has been submitted for <strong>{customer_name}</strong>. Kindly review and take the necessary action to unfreeze.</p>
     
     <p><strong>Details:</strong></p>
     <ul>
@@ -321,6 +325,7 @@ def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_bala
     """
     
     # Displaying the message for debug purposes (optional)
+  
     frappe.sendmail(
         recipients=mail_list,
         subject=subject,
