@@ -315,7 +315,7 @@ def render_html_image(doctype, name, format=None, doc=None, no_letterhead=0, lan
 
     return
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def update_item_bottom_price(item_code, price):
     try:
         # Check if the item price exists for the specified criteria
