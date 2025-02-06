@@ -7,16 +7,13 @@ def send_notification(doc, method=None):
         settings = frappe.get_doc("ArcApps Alert Settings")
         email_enabled = bool(settings.excel_email)
         sms_enabled = bool(settings.excel_sms)
-        notification_permission = get_notification_permission(doc.name)
-        if notification_permission['sms'] and sms_enabled:
+        permission= bool(doc.excel_send_welcome_notification)
+        if not permission :
+            return
+        if sms_enabled :
             send_sms_notification(doc, method)
-        if notification_permission['email']:
+        if email_enabled:
             send_email_notification(doc, method)
-        if notification_permission['both']:
-            if sms_enabled:
-                send_sms_notification(doc, method)
-            if email_enabled:
-                send_email_notification(doc, method)
 
     except frappe.DoesNotExistError:
         print("ArcApps Alert Settings not found.")
@@ -49,6 +46,7 @@ def send_sms_notification(doc, method):
         
         for phone_no in notified_phone_no_list:
             send_sms([phone_no], message,success_msg=False)
+            
 
 def send_email_notification(doc, method=None):
     customer_details = get_customer_details(doc.name)

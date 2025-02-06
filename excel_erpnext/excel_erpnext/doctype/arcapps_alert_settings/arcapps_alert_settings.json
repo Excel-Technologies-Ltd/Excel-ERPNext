@@ -11,6 +11,17 @@
   "excel_sms",
   "column_break_bwbao",
   "excel_email",
+  "allow_on_doctype_section",
+  "sales_invoice",
+  "sales_return",
+  "column_break_zz9ac",
+  "payment_entry",
+  "credit_note_journal",
+  "column_break_daiq9",
+  "benefit_journal",
+  "debit_adjustment_journal",
+  "column_break_7oz82",
+  "cancellation_all",
   "attachment_upload_section",
   "invoice_att",
   "payment_att",
@@ -113,12 +124,71 @@
   {
    "fieldname": "column_break_xycdz",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "allow_on_doctype_section",
+   "fieldtype": "Section Break",
+   "label": "Allow on Doctype"
+  },
+  {
+   "default": "0",
+   "fieldname": "sales_invoice",
+   "fieldtype": "Check",
+   "label": "Sales Invoice"
+  },
+  {
+   "default": "0",
+   "fieldname": "sales_return",
+   "fieldtype": "Check",
+   "label": "Sales Return"
+  },
+  {
+   "fieldname": "column_break_zz9ac",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_daiq9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_entry",
+   "fieldtype": "Check",
+   "label": " Payment Entry"
+  },
+  {
+   "fieldname": "column_break_7oz82",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "credit_note_journal",
+   "fieldtype": "Check",
+   "label": "Credit Note (Journal)"
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_adjustment_journal",
+   "fieldtype": "Check",
+   "label": "Debit Adjustment (Journal)"
+  },
+  {
+   "default": "0",
+   "fieldname": "benefit_journal",
+   "fieldtype": "Check",
+   "label": "Benefit (Journal)"
+  },
+  {
+   "default": "0",
+   "fieldname": "cancellation_all",
+   "fieldtype": "Check",
+   "label": "Cancellation (All)"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-14 15:36:09.677810",
+ "modified": "2025-02-06 11:06:02.708077",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",
