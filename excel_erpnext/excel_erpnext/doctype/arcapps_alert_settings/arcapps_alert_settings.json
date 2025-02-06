@@ -19,8 +19,9 @@
   "credit_note_journal",
   "column_break_daiq9",
   "benefit_journal",
-  "debit_adjustment_journal",
+  "receive_journal",
   "column_break_7oz82",
+  "debit_adjustment_journal",
   "cancellation_all",
   "attachment_upload_section",
   "invoice_att",
@@ -176,19 +177,25 @@
    "default": "0",
    "fieldname": "benefit_journal",
    "fieldtype": "Check",
-   "label": "Benefit (Journal)"
+   "label": "Rebate (Journal)"
   },
   {
    "default": "0",
    "fieldname": "cancellation_all",
    "fieldtype": "Check",
    "label": "Cancellation (All)"
+  },
+  {
+   "default": "0",
+   "fieldname": "receive_journal",
+   "fieldtype": "Check",
+   "label": "Receive Entry (Journal)"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-06 11:06:02.708077",
+ "modified": "2025-02-06 13:40:03.844823",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_email_to_cm,send_cm_mail_from_payment_entry
+from excel_erpnext.doc_events.common.common import get_customer_details,  check_allow_on_doctype, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_email_to_cm,send_cm_mail_from_payment_entry
 def send_notification(doc, method=None):
     
     if doc.payment_type != "Receive":
@@ -12,6 +12,12 @@ def send_notification(doc, method=None):
     settings = frappe.get_doc("ArcApps Alert Settings")
     sms_enabled = bool(settings.excel_sms)
     email_enabled = bool(settings.excel_email)
+    
+    allow_on_doctype= check_allow_on_doctype()
+    if method == "on_submit" and not allow_on_doctype['payment_entry']:
+        return
+    if method == "on_cancel" and not allow_on_doctype['cancellation_all']:
+        return
     notification_permission = get_notification_permission(doc.party)
     if notification_permission['sms']:
         send_sms_notification(doc, method)
@@ -37,10 +43,10 @@ def send_sms_notification(doc,method):
         posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
         posting_time = format_time_to_ampm(doc.modified)
         if method == "on_submit":
-            message = f"{party_name},Tk.{paid_amount}/=paid by {voucher_no} on {posting_date},{posting_time}[{mode_of_payment}]. Balance: Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+            message = f"{party_name},Tk.{paid_amount}/= has been deposited/received on {posting_date},{posting_time}. Balance: Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
-        if method == "on_cancel":
-            message = f"Dear {party_name}, {voucher_no} amounting Tk.{paid_amount}/= has been canceled. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=. [ETL]"
+        if method == "on_cancel" :
+            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}/= has been canceled. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=. [ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):
@@ -78,7 +84,7 @@ def send_email_notification(doc,method):
             subject = "ETL - Payment Notification"
             message = f"""
                 <p>Dear <b>{party_name}</b>,</p>
-                <p>Thank you for your payment of Taka <b>{paid_amount}/=</b> via {voucher_no} {brand_list} on {posting_date} at {posting_time} by <b>[{mode_of_payment}]</b>. Your current outstanding balance is Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
+                <p>Thank you for your payment of Taka <b>{paid_amount}/=</b> on {posting_date} at {posting_time} by <b>[{mode_of_payment}]</b>. Your current outstanding balance is Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
                 <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
                 {f'at <b>{sales_person_mobile_no}</b>' if sales_person_mobile_no  else ''}
                 {f'or email' if sales_person_email and sales_person_mobile_no else ''}
@@ -102,7 +108,7 @@ def send_email_notification(doc,method):
             subject = "ETL - Cancellation Notification"
             message = f"""
             <p>Dear <b>{party_name}</b>,</p>
-            <p>{voucher_no} amounting Taka <b>{(paid_amount)}/=</b> has been canceled on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
+            <p>Rectified the previous transaction amount Taka <b>{(paid_amount)}/=</b> on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
             <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
             {f'at <b>{sales_person_mobile_no}</b>' if sales_person_mobile_no  else ''}
             {f'or email' if sales_person_email and sales_person_mobile_no else ''}

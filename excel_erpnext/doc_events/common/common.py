@@ -236,6 +236,20 @@ def get_attachment_permission(doc_name):
         return bool(settings.corp_journal_att)
     else:
         return False
+    
+    
+def check_allow_on_doctype():
+    settings = frappe.get_doc("ArcApps Alert Settings")
+    return {
+        "sales_invoice":bool (settings.sales_invoice),
+        "sales_return": bool(settings.sales_return),
+        "payment_entry":bool(settings.payment_entry),
+        "credit_note_journal":bool(settings.credit_note_journal),
+        "benefit_journal":bool(settings.benefit_journal),
+        "debit_adjustment_journal":bool(settings.debit_adjustment_journal),
+        "receive_journal":bool(settings.receive_journal),
+        "cancellation_all":bool(settings.cancellation_all)
+    }
 
 def get_cm_mail():
     try:

@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details, get_notified_mobile_no, get_notified_email, get_customer_outstanding_balance, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_cm_mail_from_journal_entry
+from excel_erpnext.doc_events.common.common import get_customer_details,  check_allow_on_doctype, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_cm_mail_from_journal_entry
 def send_notification(doc, method=None):
     
     accounts=doc.accounts
@@ -21,10 +21,22 @@ def send_notification(doc, method=None):
     for account in customer_accounts:
         if method == 'on_submit' and account.get('party_type') == "Customer" and account.get('account') == "10203 - Accounts Receivable - ETL":
             send_cm_mail_from_journal_entry(account,doc.name)   
-        notification_permission = get_notification_permission(account.get('party'))
+        
         settings = frappe.get_doc("ArcApps Alert Settings")
         sms_enabled = bool(settings.excel_sms)
         email_enabled = bool(settings.excel_email)
+        allow_on_doctype= check_allow_on_doctype()
+        if method == "on_submit" and account.get('is_rebate')== "Rebate" and not allow_on_doctype['benefit_journal']:
+            return
+        if method == "on_submit" and account.get('account') == '10203 - Accounts Receivable - ETL' and account.get('party_type') == 'Customer' and account.get('debit_in_account_currency') != 0 and not allow_on_doctype['debit_adjustment_journal']:
+            return
+        if method == "on_submit" and doc.voucher_type == 'Credit Note' and not allow_on_doctype['credit_note_journal']:
+            return
+        if method == "on_submit" and doc.voucher_type == 'Receive Entry' and not allow_on_doctype['receive_journal']:
+            return
+        if method == "on_cancel" and not allow_on_doctype['cancellation_all']:
+            return
+        notification_permission = get_notification_permission(account.get('party'))
         if notification_permission.get('sms'):
             send_sms_notification(doc, method,account)
         if notification_permission.get('email'):
@@ -35,6 +47,7 @@ def send_notification(doc, method=None):
             if email_enabled:
                 send_email_notification(doc, method,account)
 def send_sms_notification(doc, method, account):
+
     account_name = account.get('account')
     party_type = account.get('party_type')
     customer = account.get('party')
@@ -91,7 +104,7 @@ def send_sms_notification(doc, method, account):
             send_sms_frappe(mobile_number, cancel_message,success_msg=False)
         return 
 def send_email_notification(doc, method, account):
-    
+    allow_on_doctype= check_allow_on_doctype()
     territory= doc.excel_territory
     if territory == "CORPORATE" or territory == "TENDER":
         attachment_permission = get_attachment_permission("Journal Attachment (Corporate)")
@@ -121,7 +134,7 @@ def send_email_notification(doc, method, account):
 
 
 
-    if account.get('is_rebate')== "Rebate":
+    if account.get('is_rebate')== "Rebate" and allow_on_doctype['benefit_journal']:
         subject = "ETL - Ledger Transaction Notification"
         message = f"""
         <p>Dear <b>{customer_name}</b>,</p>
@@ -170,7 +183,7 @@ def send_email_notification(doc, method, account):
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
-    if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
+    if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0 and allow_on_doctype['ledger_debit']:
         subject = "ETL - Ledger Transaction Notification"
         message = f"""
         <p>Dear <b>{customer_name}</b>,</p>
@@ -219,7 +232,7 @@ def send_email_notification(doc, method, account):
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
     # Static Email Content for Each Condition
-    if doc.voucher_type == 'Credit Note':
+    if doc.voucher_type == 'Credit Note' and allow_on_doctype['credit_note']:
         subject = "ETL - Ledger Transaction Notification"
         message = f"""
         <p>Dear <b>{customer_name}</b>,</p>
@@ -267,7 +280,7 @@ def send_email_notification(doc, method, account):
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
-    if doc.voucher_type == 'Receive Entry':
+    if doc.voucher_type == 'Receive Entry' and allow_on_doctype['receive_journal']:
         # on_submit
         subject = "ETL - Payment Notification"
         message = f"""
