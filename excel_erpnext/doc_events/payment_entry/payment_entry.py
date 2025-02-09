@@ -46,7 +46,7 @@ def send_sms_notification(doc,method):
             message = f"{party_name},Tk.{paid_amount}/= has been deposited/received on {posting_date},{posting_time}. Balance: Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel" :
-            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}/= has been canceled. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=. [ETL]"
+            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}/=. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):

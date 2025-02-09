@@ -283,6 +283,6 @@ scheduler_events = {
 #         ]
 #     },
 # ]
-fixtures = [  'Custom Field',  'Property Setter','Print Format']
+fixtures = [  'Custom Field',  'Property Setter']
 
 
