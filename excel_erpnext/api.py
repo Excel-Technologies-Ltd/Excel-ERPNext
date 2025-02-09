@@ -387,3 +387,24 @@ def generate_token(email):
         "api_key": user_doc.api_key,
         "api_secret": user_doc.get_password("api_secret"),
     }
+
+@frappe.whitelist(allow_guest=True)
+def get_All_Sales_And_Taxes_Details():
+    # Get all Sales Taxes and Charges Template records with their child table data
+    sales_templates = frappe.get_all(
+        "Sales Taxes and Charges Template",
+        fields=["name", "title", "is_default", "company", "disabled"],
+        as_list=False,
+    )
+    
+    # Fetch child table (taxes) data for each template
+    for template in sales_templates:
+        taxes = frappe.get_all(
+            "Sales Taxes and Charges",
+            filters={"parent": template.name},
+            fields=["idx", "description", "rate", "tax_amount", "total", "tax_amount_after_discount_amount", "base_tax_amount", "base_total", "parent", "base_tax_amount_after_discount_amount"],
+            order_by="idx"
+        )
+        template["taxes"] = taxes
+    
+    return sales_templates
