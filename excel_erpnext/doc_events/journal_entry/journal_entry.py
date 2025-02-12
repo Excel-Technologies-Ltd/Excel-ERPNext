@@ -1,6 +1,6 @@
 import frappe
 from frappe.core.doctype.sms_settings.sms_settings import send_sms  as send_sms_frappe
-from excel_erpnext.doc_events.common.common import get_customer_details,  check_allow_on_doctype, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_cm_mail_from_journal_entry
+from excel_erpnext.doc_events.common.common import get_customer_details,  check_allow_on_doctype, format_in_bangladeshi_currency, get_notification_permission,format_time_to_ampm,format_date_to_custom,format_date_to_custom_cancel,get_attachment_permission,send_cm_mail_from_journal_entry,generate_transaction_table,generate_email_footer,generate_contact_info
 def send_notification(doc, method=None):
     
     accounts=doc.accounts
@@ -60,24 +60,26 @@ def send_sms_notification(doc, method, account):
     customer_name = customer_details.get('customer_name')
     voucher_no = doc.name
     credit_amount=account.get('credit_in_account_currency')
+    credit_amount=format_in_bangladeshi_currency(credit_amount,sms=True)
     debit_amount=account.get('debit_in_account_currency')
+    debit_amount=format_in_bangladeshi_currency(debit_amount,sms=True)
     excel_product_team= account.get('excel_product_team')
     user_remarks= doc.excel_scheme_name 
     posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
     posting_time = format_time_to_ampm(doc.modified)
-    # Condition: Rebate
+    # Condition: Rebate 
     if account.get('is_rebate')== "Rebate":
-        message = f"{customer_name},Tk.{credit_amount}/= adjusted against {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{credit_amount}/=. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}/= adjusted against {user_remarks} on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}/=.Outstanding: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
         if method == "on_cancel":
             send_sms_frappe(mobile_number, cancel_message ,success_msg=False)  
         return 
-    # Condition: Ledger Debit
+    # Condition: Ledger Debit = Ledger Adjustment
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        message = f"{customer_name},Tk.{debit_amount}/= adjusted for {user_remarks} on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{debit_amount}/=. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}/= adjusted for {user_remarks} on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}/=.Outstanding: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
@@ -85,18 +87,18 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Credit Note
     if doc.voucher_type == 'Credit Note':
-        message = f"{customer_name},Tk.{credit_amount}/= adjusted against “{excel_product_team}” on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{credit_amount}/=. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount) }/= adjusted against on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}/=.Outstanding: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
             send_sms_frappe(mobile_number, cancel_message ,success_msg=False)
         return 
-    # Condition: Receive
+    # Condition: Receive Entry = Payment Entry
     if doc.voucher_type == 'Receive Entry':
-        message = f"{customer_name},Tk.{credit_amount}/= received on {posting_date},{posting_time}.Balance:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{credit_amount}/=. Balance: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+        message = f"{customer_name},Tk.{ credit_amount}/= received on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{credit_amount}/=.Outstanding: Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
@@ -118,114 +120,78 @@ def send_email_notification(doc, method, account):
     if len(email_id) == 0:
         return
     outstanding_balance = customer_details.get('outstanding_balance')
+    outstanding_balance=format_in_bangladeshi_currency(outstanding_balance)
     customer_name = customer_details.get('customer_name')
     sales_person_email = customer_details.get('sales_person_email')
     sales_person_name = customer_details.get('sales_person_name')
     sales_person_mobile_no = customer_details.get('sales_person_mobile_no')
     voucher_no = doc.name
-    credit_amount=account.get('credit_in_account_currency')
-    debit_amount=account.get('debit_in_account_currency')
+    get_credit_amount=account.get('credit_in_account_currency')
+    credit_amount=format_in_bangladeshi_currency(get_credit_amount)
+    get_debit_amount=account.get('debit_in_account_currency')
+    debit_amount=format_in_bangladeshi_currency(get_debit_amount)
     excel_product_team= account.get('excel_product_team')
     user_remarks= doc.excel_scheme_name
     posting_date = format_date_to_custom(doc.posting_date, need_year=True) if method == "on_submit" else format_date_to_custom_cancel(doc.modified, need_year=True)
     posting_time = format_time_to_ampm(doc.modified ,is_mail=True)
     pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Journal Entry", file_name=f"{doc.name}.pdf")
-
-
-
+  
+    support_content = generate_contact_info(sales_person_name, sales_person_mobile_no, sales_person_email)
+    footer_content = generate_email_footer()
 
     if account.get('is_rebate')== "Rebate":
+        transaction_data = {
+            "Customer Name": customer_name,
+            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Amount":  credit_amount if method == "on_submit" else abs(debit_amount),
+            "Transaction Type": "Rebate",
+            "Outstanding Amount": outstanding_balance,
+        }
+        if method == "on_submit":
+            transaction_data['Remarks'] = user_remarks
+        table_content = generate_transaction_table(transaction_data)
         subject = "ETL - Ledger Transaction Notification"
         message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger against “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         cancel_subject = "ETL - Cancellation Notification"
         cancel_message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>Rectified the previous transaction amount Taka <b>{(debit_amount)}/=</b> on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         # frappe.sendmail(recipients=[email_id], subject=subject, message=message)
         if method == "on_submit":
+           
             frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
         subject = "ETL - Ledger Transaction Notification"
+        transaction_data = {
+            "Customer Name": customer_name,
+            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Amount": debit_amount,
+            "Transaction Type": "Ledger Adjustment",
+            "Outstanding Amount": outstanding_balance,
+        }
+        if method == "on_submit":
+            transaction_data['Remarks'] = user_remarks
+        table_content = generate_transaction_table(transaction_data)
         message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>We have adjusted Taka <b>{debit_amount}/=</b> to your ledger due to “{user_remarks}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         cancel_subject = "ETL - Cancellation Alert"
         cancel_message  = f"""
-            <p>Dear <b>{customer_name}</b>,</p>
-            <p>Rectified the previous transaction amount Taka <b>{(debit_amount)}/=</b> on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
-            <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-            {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-            {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-            {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-            <p>For more information on our products and services, please visit our website: 
-                <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-                or on Facebook: 
-                <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-            </p>
-            <p>We truly appreciate your continued business and partnership.</p>
-            <br>
-            <p>Sincerely,</p>
-            <p>Excel Technologies Ltd.</p>
-            <p style="color: #888; font-size: 12px; font-style: italic;">
-                This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
-            """
+        {table_content}
+        {support_content}
+        {footer_content}
+        """
         if method == "on_submit":
             frappe.sendmail(recipients=email_id, subject=subject, message=message ,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
@@ -234,97 +200,52 @@ def send_email_notification(doc, method, account):
     # Static Email Content for Each Condition
     if doc.voucher_type == 'Credit Note' :
         subject = "ETL - Ledger Transaction Notification"
+        transaction_data = {
+            "Customer Name": customer_name,
+            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Amount": credit_amount,
+            "Transaction Type": "Credit Note",
+            "Outstanding Amount": outstanding_balance,
+        }
+        table_content = generate_transaction_table(transaction_data)
         message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger against “{excel_product_team}” on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         cancel_subject = "ETL - Cancellation Alert"
         cancel_message  = f"""
-            <p>Dear <b>{customer_name}</b>,</p>
-            <p>Rectified the previous transaction amount Taka <b>{(credit_amount)}/=</b> on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
-            <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-            {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-            {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-            {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-            <p>For more information on our products and services, please visit our website: 
-                <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-                or on Facebook: 
-                <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-            </p>
-            <p>We truly appreciate your continued business and partnership.</p>
-            <br>
-            <p>Sincerely,</p>
-            <p>Excel Technologies Ltd.</p>
-            <p style="color: #888; font-size: 12px; font-style: italic;">
-                This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
-            """
+        {table_content}
+        {support_content}
+        {footer_content}
+        """
         if method == "on_submit":
             frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return 
     if doc.voucher_type == 'Receive Entry' :
-        # on_submit
         subject = "ETL - Payment Notification"
+        transaction_data = {
+            "Customer Name": customer_name,
+            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Amount": credit_amount,
+            "Transaction Type": "Payment Entry",
+            "Outstanding Amount": outstanding_balance,
+        }
+        table_content = generate_transaction_table(transaction_data)
         message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>We have adjusted Taka <b>{credit_amount}/=</b> to your ledger on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b>.</p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         # frappe.sendmail(recipients=[email_id], subject=subject, message=message)
         # on_cancel
         cancel_subject = "ETL - Cancellation Alert"
         cancel_message = f"""
-        <p>Dear <b>{customer_name}</b>,</p>
-        <p>Rectified the previous transaction amount Taka <b>{(credit_amount)}/=</b> on {posting_date} at {posting_time}. Your updated balance is now Taka <b>{format_in_bangladeshi_currency(outstanding_balance)}/=</b></p>
-        <p>If you have any requirement or need assistance, please feel free to reach out {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} <b>{sales_person_name}</b> {'.' if not sales_person_mobile_no and not sales_person_email else ''}
-        {f'at {sales_person_mobile_no}' if sales_person_mobile_no  else ''}
-        {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-        {f'at {sales_person_email}' if sales_person_email  else ''} </p>
-        <p>For more information on our products and services, please visit our website: 
-            <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
-            or on Facebook: 
-            <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
-        </p>
-        <p>We truly appreciate your continued business and partnership.</p>
-        <br>
-        <p>Sincerely,</p>
-        <p>Excel Technologies Ltd.</p>
-        <p style="color: #888; font-size: 12px; font-style: italic;">
-            This is a system generated email. Please do not reply, as responses to this email are not monitored.
-            </p>
+        {table_content}
+        {support_content}
+        {footer_content}
         """
         if method == "on_submit":
             frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])

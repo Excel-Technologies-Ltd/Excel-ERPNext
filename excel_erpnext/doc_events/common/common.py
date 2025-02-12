@@ -111,8 +111,8 @@ def format_in_bangladeshi_currency(amount, sms=False):
         amount = abs(amount)  # Work with the positive version of the amount for formatting
 
     # Convert to string and round only if sms is True
-    if sms:
-        amount = round(amount, 2)
+
+    amount = round(amount, 2)
     amount_str = str(amount)
     
     # Handle decimal part if present (for cases with or without sms)
@@ -345,3 +345,89 @@ def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_bala
         subject=subject,
         message=message
     )
+
+
+def generate_transaction_table( transaction_details):
+    """
+    Generate an HTML email with a dynamic transaction table.
+
+    :param customer: Customer name
+    :param invoice_no: Invoice number
+    :param transaction_details: Dictionary containing transaction details
+    :return: HTML email string
+    """
+    table_rows = ""
+    for key, value in transaction_details.items():
+        table_rows += f"""
+            <tr>
+                <td><b>{key}</b></td>
+                <td>{value}</td>
+            </tr>
+        """
+
+    email_html = f"""
+    <p>Dear <b>Valued Partner</b>,</p>
+    <p>We truly appreciate your continued business and partnership. We have performed the following transaction, details stated below:</p>
+    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+    <tr style="background-color: #f2f2f2;">
+        <td><b>Particulars</b></td>
+        <td>Transaction Details</td>
+    </tr>
+        {table_rows}
+    </table>
+    """
+
+    return email_html
+
+
+# Example usage
+
+
+def generate_email_footer():
+    """
+    Generate an HTML footer for the email.
+    
+    :return: HTML footer string
+    """
+    footer_html = """
+    <p>For more information on our products and services, please visit our website: 
+        <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
+        or on Facebook: 
+        <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
+    </p>
+    <p>We truly appreciate your continued business and partnership.</p>
+    <br>
+    <p>Sincerely,</p>
+    <p>Excel Technologies Ltd.</p>
+    <p style="color: #888; font-size: 12px; font-style: italic;">
+        This is a system-generated email. Please do not reply, as responses to this email are not monitored.
+    </p>
+    """
+    return footer_html
+
+
+
+def generate_contact_info(sales_person_name = None, sales_person_mobile_no=None, sales_person_email=None):
+    """
+    Generate an HTML paragraph for contact information.
+
+    :param sales_person_name: Name of the sales representative
+    :param sales_person_mobile_no: Mobile number of the sales representative (optional)
+    :param sales_person_email: Email of the sales representative (optional)
+    :return: HTML string with contact information
+    """
+    contact_info = f"""
+    <p>If you have any requirements or need assistance, please feel free to reach out 
+    {'your KAM' if not sales_person_mobile_no and not sales_person_email else 'to'} 
+    <b>{sales_person_name}</b> 
+    {'.' if not sales_person_mobile_no and not sales_person_email else ''}
+    {f'at {sales_person_mobile_no}' if sales_person_mobile_no else ''}
+    {f'or email' if sales_person_email and sales_person_mobile_no else ''}
+    {f'at {sales_person_email}' if sales_person_email else ''} 
+    </p>
+    """
+    return contact_info.strip()
+
+
+# Example usage
+
