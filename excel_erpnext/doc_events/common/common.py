@@ -106,7 +106,7 @@ def get_customer_outstanding_balance(customer_name):
 
 def format_in_bangladeshi_currency(amount, sms=False):
     # Determine if the amount is negative
-    is_negative = amount < 0
+    is_negative = float(amount) < 0
     if is_negative:
         amount = abs(amount)  # Work with the positive version of the amount for formatting
 
