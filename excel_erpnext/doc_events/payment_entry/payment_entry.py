@@ -104,17 +104,17 @@ def send_email_notification(doc,method):
             transaction_data = {
                 "Customer Name": party_name,
                 "Transaction Date": f"{posting_date} {posting_time}",
-                "Transaction Amount": abs(paid_amount),
+                "Transaction Amount": paid_amount,
                 "Transaction Type": "Payment Entry",
                 "Outstanding Amount": outstanding_balance
             }
+            table_content = generate_transaction_table(transaction_data)
             subject = "ETL - Cancellation Notification"
             message = f"""
             {table_content}
             {support_content}
             {footer_content}
             """
-
             frappe.sendmail(recipients=email_id, subject=subject, message=message)
 
 

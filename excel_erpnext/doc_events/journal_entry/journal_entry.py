@@ -143,7 +143,7 @@ def send_email_notification(doc, method, account):
         transaction_data = {
             "Customer Name": customer_name,
             "Transaction Date": f"{posting_date} {posting_time}",
-            "Transaction Amount":  credit_amount if method == "on_submit" else abs(debit_amount),
+            "Transaction Amount":  credit_amount if method == "on_submit" else (debit_amount),
             "Transaction Type": "Rebate",
             "Outstanding Amount": outstanding_balance,
         }

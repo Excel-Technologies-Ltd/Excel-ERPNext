@@ -151,7 +151,7 @@ def format_in_bangladeshi_currency(amount, sms=False):
     if is_negative:
         formatted_amount = '-' + formatted_amount
 
-    return formatted_amount
+    return formatted_amount + "/="
 
 
 def get_notification_permission(customer):
@@ -368,13 +368,15 @@ def generate_transaction_table( transaction_details):
     email_html = f"""
     <p>Dear <b>Valued Partner</b>,</p>
     <p>We truly appreciate your continued business and partnership. We have performed the following transaction, details stated below:</p>
+    <br>
     <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%;">
-    <tr style="background-color: #f2f2f2;">
-        <td><b>Particulars</b></td>
-        <td>Transaction Details</td>
+    <tr style="background-color: #2c63af;">
+        <td style="color: #ffffff;"><b>Particulars</b></td>
+        <td style="color: #ffffff;"><b>Transaction Details</b></td>
     </tr>
         {table_rows}
     </table>
+    <br>
     """
 
     return email_html
@@ -390,12 +392,12 @@ def generate_email_footer():
     :return: HTML footer string
     """
     footer_html = """
+    <br>
     <p>For more information on our products and services, please visit our website: 
         <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
         or on Facebook: 
         <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
     </p>
-    <p>We truly appreciate your continued business and partnership.</p>
     <br>
     <p>Sincerely,</p>
     <p>Excel Technologies Ltd.</p>
@@ -422,9 +424,10 @@ def generate_contact_info(sales_person_name = None, sales_person_mobile_no=None,
     <b>{sales_person_name}</b> 
     {'.' if not sales_person_mobile_no and not sales_person_email else ''}
     {f'at {sales_person_mobile_no}' if sales_person_mobile_no else ''}
-    {f'or email' if sales_person_email and sales_person_mobile_no else ''}
-    {f'at {sales_person_email}' if sales_person_email else ''} 
+    {f'or email' if '<a href="mailto:{sales_person_email}" >{sales_person_email}</a>' and sales_person_mobile_no else ''}
+    {f'at <a href="mailto:{sales_person_email}" >{sales_person_email}</a>' if sales_person_email else ''} 
     </p>
+    
     """
     return contact_info.strip()
 

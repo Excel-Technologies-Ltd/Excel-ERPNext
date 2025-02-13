@@ -45,14 +45,14 @@ def send_sms_notification(doc,method):
             message = f"{customer}, invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"{customer}, return invoice amount of Tk.{format_in_bangladeshi_currency(abs(bill_amount),sms=True)}/= generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+            message = f"{customer}, return invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
             message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(abs(bill_amount),sms=True)}/= has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
 
         
@@ -100,7 +100,7 @@ def send_email_notification(doc,method):
             transaction_data = {
                 "Customer Name": customer,
                 "Transaction Date": f"{posting_date} {posting_time}" ,
-                "Transaction Amount": abs(bill_amount),
+                "Transaction Amount": bill_amount,
                 "Transaction Type": "Sales Return",
                 "Outstanding Amount": outstanding_balance
             }
@@ -123,10 +123,11 @@ def send_email_notification(doc,method):
             transaction_data = {
                 "Customer Name": customer,
                 "Transaction Date": f"{posting_date} {posting_time}" ,
-                "Transaction Amount": abs(bill_amount),
+                "Transaction Amount": bill_amount,
                 "Transaction Type": "Sales Invoice",
                 "Outstanding Amount": outstanding_balance
             }
+            table_content = generate_transaction_table(transaction_data)
             subject = "ETL - Cancellation Notification"
             message = f"""
             {table_content}
@@ -140,7 +141,7 @@ def send_email_notification(doc,method):
             transaction_data = {
                 "Customer Name": customer,
                 "Transaction Date": f"{posting_date} {posting_time}" ,
-                "Transaction Amount": abs(bill_amount),
+                "Transaction Amount": bill_amount,
                 "Transaction Type": "Sales Return",
                 "Outstanding Amount": outstanding_balance
             }
