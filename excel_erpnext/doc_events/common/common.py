@@ -105,53 +105,52 @@ def get_customer_outstanding_balance(customer_name):
 
 
 def format_in_bangladeshi_currency(amount, sms=False):
+    if isinstance(amount, str):
+        amount = float(amount)
     # Determine if the amount is negative
-    is_negative = float(amount) < 0
+    is_negative = amount < 0
     if is_negative:
         amount = abs(amount)  # Work with the positive version of the amount for formatting
-
-    # Convert to string and round only if sms is True
-
-    amount = round(amount, 2)
-    amount_str = str(amount)
     
-    # Handle decimal part if present (for cases with or without sms)
+    # Round the amount to 2 decimal places or 1 decimal place if sms=True
+    if sms:
+        amount = round(amount, 1)
+    else:
+        amount = round(amount, 2)
+
+    # Convert to string for formatting
+    print('amount',amount)
+    amount_str = str(amount)
+
+    # Split the amount into whole and decimal parts
     if '.' in amount_str:
         whole_part, decimal_part = amount_str.split('.')
-        if sms:
-            decimal_part = decimal_part.ljust(2, '0')[:2]  # Ensure two decimal places
     else:
-        whole_part = amount_str
-        decimal_part = None
+        whole_part, decimal_part = amount_str, '0'
 
-    length = len(whole_part)
+    # Format the whole part with commas for Bangladeshi style
+    whole_length = len(whole_part)
+    if whole_length > 3:
+        # First part, split it by 3 digits
+        first_part = whole_part[-3:]
+        remaining_part = whole_part[:-3]
 
-    # If the number is less than or equal to 3 digits, return as is
-    if length <= 3:
-        formatted_amount = amount_str if not sms or not decimal_part else f"{whole_part}.{decimal_part}"
+        # Insert commas every 2 digits from the left side
+        formatted_remaining_part = []
+        while len(remaining_part) > 2:
+            formatted_remaining_part.append(remaining_part[-2:])
+            remaining_part = remaining_part[:-2]
+
+        # Add the final part
+        formatted_remaining_part.append(remaining_part)
+
+        # Reassemble the whole part with commas
+        formatted_whole_part = ','.join(formatted_remaining_part[::-1]) + ',' + first_part
     else:
-        # Format last three digits, then add commas in the Bangladeshi style
-        formatted_amount = whole_part[-3:]  # Last three digits
-        remaining_digits = whole_part[:-3]  # Digits before the last three
+        formatted_whole_part = whole_part
 
-        # Group by 2 digits from the end of remaining_digits
-        while len(remaining_digits) > 2:
-            formatted_amount = remaining_digits[-2:] + ',' + formatted_amount
-            remaining_digits = remaining_digits[:-2]
-
-        # Add the remaining part, which is 1 or 2 digits
-        if remaining_digits:
-            formatted_amount = remaining_digits + ',' + formatted_amount
-
-    # Append decimal part if present
-    if decimal_part:
-        formatted_amount = f"{formatted_amount}.{decimal_part}"
-
-    # Add negative sign back if needed
-    if is_negative:
-        formatted_amount = '-' + formatted_amount
-
-    return formatted_amount + "/="
+    # Return the final formatted string
+    return f"{formatted_whole_part}.{decimal_part}/="
 
 
 def get_notification_permission(customer):
@@ -347,12 +346,10 @@ def send_email_to_cm(customer_code, customer_name, paid_amount, outstanding_bala
     )
 
 
-def generate_transaction_table( transaction_details):
+def generate_transaction_table(transaction_details):
     """
     Generate an HTML email with a dynamic transaction table.
 
-    :param customer: Customer name
-    :param invoice_no: Invoice number
     :param transaction_details: Dictionary containing transaction details
     :return: HTML email string
     """
@@ -360,8 +357,8 @@ def generate_transaction_table( transaction_details):
     for key, value in transaction_details.items():
         table_rows += f"""
             <tr>
-                <td><b>{key}</b></td>
-                <td>{value}</td>
+                <td style="padding: 5px; text-align: left; border: 1px solid #ddd; background-color: #f9f9f9;"><b>{key}</b></td>
+                <td style="padding: 5px; text-align: left; border: 1px solid #ddd; background-color: #f9f9f9;">{value}</td>
             </tr>
         """
 
@@ -369,17 +366,36 @@ def generate_transaction_table( transaction_details):
     <p>Dear <b>Valued Partner</b>,</p>
     <p>We truly appreciate your continued business and partnership. We have performed the following transaction, details stated below:</p>
     <br>
-    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 600px; table-layout: fixed;">
     <tr style="background-color: #2c63af;">
-        <td style="color: #ffffff;"><b>Particulars</b></td>
-        <td style="color: #ffffff;"><b>Transaction Details</b></td>
+        <td style="color: #ffffff; padding: 5px; text-align: left; border: 1px solid #ddd;"><b>Particulars</b></td>
+        <td style="color: #ffffff; padding: 5px; text-align: left; border: 1px solid #ddd;"><b>Transaction Details</b></td>
     </tr>
         {table_rows}
     </table>
-    <br>
+    <style>
+    @media (max-width: 600px) {{
+        table {{
+            width: 100% !important;
+        }}
+        td {{
+            width: 100% !important;
+            display: block;
+            box-sizing: border-box;
+        }}
+        td:first-child {{
+            font-weight: bold;
+            padding-top: 10px;
+        }}
+        td:nth-child(2) {{
+            padding-top: 10px;
+        }}
+    }}
+    </style>
     """
 
     return email_html
+
 
 
 # Example usage
@@ -392,15 +408,15 @@ def generate_email_footer():
     :return: HTML footer string
     """
     footer_html = """
-    <br>
-    <p>For more information on our products and services, please visit our website: 
+   
+    <p >For more information on our products and services, please visit our website: 
         <a href="http://www.excelbd.com" target="_blank">www.excelbd.com</a> 
         or on Facebook: 
         <a href="https://www.facebook.com/ExcelTechnologiesLtd" target="_blank">Excel Technologies Ltd</a>
     </p>
-    <br>
-    <p>Sincerely,</p>
-    <p>Excel Technologies Ltd.</p>
+    
+    <p style="padding-top: 20px; margin: 0px !important;">Sincerely,</p>
+    <p style="margin: 0px !important;">Excel Technologies Ltd.</p>
     <p style="color: #888; font-size: 12px; font-style: italic;">
         This is a system-generated email. Please do not reply, as responses to this email are not monitored.
     </p>

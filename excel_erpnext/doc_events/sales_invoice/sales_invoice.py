@@ -34,25 +34,25 @@ def send_sms_notification(doc,method):
     if len(mobile_number) == 0:
         return
     outstanding_balance = customer_details.get('outstanding_balance')
-    outstanding_balance=format_in_bangladeshi_currency(outstanding_balance)
+    
     bill_amount = doc.grand_total
-    bill_amount=format_in_bangladeshi_currency(bill_amount)
+    
     posting_date =format_date_to_custom(doc.posting_date) if method == "on_submit" and doc.posting_date else format_date_to_custom_cancel(doc.modified)
     
     posting_time = format_time_to_ampm(doc.modified)
     if method == "on_submit":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"{customer}, invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+            message = f"{customer}, invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"{customer}, return invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=[ETL]"
+            message = f"{customer}, return invoice amount of Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}/= has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}/=.[ETL]"
+            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} has been canceled. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
             send_sms_frappe(mobile_number,message ,success_msg=False)
 
         
