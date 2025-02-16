@@ -70,7 +70,7 @@ def send_email_notification(doc, method=None):
         footer_content = generate_email_footer()
 
         message = f"""
-        <p>Dear Valued Partner,</p>
+        <p>Dear <b>Valued Partner</b>,</p>
         <p>Welcome on board! We're proud to have you as our business partner and look forward to a successful journey together.</p>
         {support_content}
         {footer_content}

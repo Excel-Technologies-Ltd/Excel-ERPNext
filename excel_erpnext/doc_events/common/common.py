@@ -103,8 +103,7 @@ def get_customer_outstanding_balance(customer_name):
     
     return outstanding_balance
 
-
-def format_in_bangladeshi_currency(amount, sms=False):
+def format_in_bangladeshi_currency(amount, sms=False,is_abs=True):
     if isinstance(amount, str):
         amount = float(amount)
     # Determine if the amount is negative
@@ -113,13 +112,9 @@ def format_in_bangladeshi_currency(amount, sms=False):
         amount = abs(amount)  # Work with the positive version of the amount for formatting
     
     # Round the amount to 2 decimal places or 1 decimal place if sms=True
-    if sms:
-        amount = round(amount, 1)
-    else:
-        amount = round(amount, 2)
+    amount = round(amount, 2)
 
     # Convert to string for formatting
-    print('amount',amount)
     amount_str = str(amount)
 
     # Split the amount into whole and decimal parts
@@ -150,8 +145,46 @@ def format_in_bangladeshi_currency(amount, sms=False):
         formatted_whole_part = whole_part
 
     # Return the final formatted string
-    return f"{formatted_whole_part}.{decimal_part}/="
+    return f"{'-' if not is_abs and is_negative else ''}{   formatted_whole_part}.{decimal_part}/="
+# def format_in_bangladeshi_currency(amount, sms=False, use_abs=True):
+#     if isinstance(amount, str):
+#         amount = float(amount)
+    
+#     # Determine if the amount is negative
+#     is_negative = amount < 0
+#     if is_negative and use_abs:
+#         amount = abs(amount)  # Work with the positive version of the amount for formatting
+    
+#     # Round the amount to 2 decimal places
+#     amount = round(amount, 2)
 
+#     # Convert to string for formatting
+#     amount_str = str(amount)
+
+#     # Split the amount into whole and decimal parts
+#     if '.' in amount_str:
+#         whole_part, decimal_part = amount_str.split('.')
+#     else:
+#         whole_part, decimal_part = amount_str, '0'
+
+#     # Format the whole part with commas for Bangladeshi style
+#     whole_length = len(whole_part)
+#     if whole_length > 3:
+#         first_part = whole_part[-3:]
+#         remaining_part = whole_part[:-3]
+
+#         formatted_remaining_part = []
+#         while len(remaining_part) > 2:
+#             formatted_remaining_part.append(remaining_part[-2:])
+#             remaining_part = remaining_part[:-2]
+
+#         formatted_remaining_part.append(remaining_part)
+
+#         formatted_whole_part = ','.join(formatted_remaining_part[::-1]) + ',' + first_part
+#     else:
+#         formatted_whole_part = whole_part
+
+#     return f"{'-' if not use_abs and is_negative else ''}{formatted_whole_part}.{decimal_part}/="
 
 def get_notification_permission(customer):
     sms=False
@@ -366,7 +399,7 @@ def generate_transaction_table(transaction_details):
     <p>Dear <b>Valued Partner</b>,</p>
     <p>We truly appreciate your continued business and partnership. We have performed the following transaction, details stated below:</p>
     <br>
-    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 600px; table-layout: fixed;">
+    <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 650px; table-layout: fixed;">
     <tr style="background-color: #2c63af;">
         <td style="color: #ffffff; padding: 5px; text-align: left; border: 1px solid #ddd;"><b>Particulars</b></td>
         <td style="color: #ffffff; padding: 5px; text-align: left; border: 1px solid #ddd;"><b>Transaction Details</b></td>

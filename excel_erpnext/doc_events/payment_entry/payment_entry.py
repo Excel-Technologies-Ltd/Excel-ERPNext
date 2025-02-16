@@ -37,14 +37,14 @@ def send_sms_notification(doc,method):
             return
         outstanding_balance = customer_details.get('outstanding_balance')
         paid_amount = doc.paid_amount
-        paid_amount=format_in_bangladeshi_currency(paid_amount)
+        paid_amount=format_in_bangladeshi_currency(paid_amount ,sms=True)
         posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
         posting_time = format_time_to_ampm(doc.modified)
         if method == "on_submit":
-            message = f"{party_name},Tk.{paid_amount} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
+            message = f"{party_name},Tk.{paid_amount} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel" :
-            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}. Balance Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
+            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.[ETL]"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):
@@ -68,7 +68,7 @@ def send_email_notification(doc,method):
         pdf_data = frappe.attach_print(doc.doctype, doc.name, print_format="Excel Payment Notify", file_name=f"{doc.name}.pdf")
 
         outstanding_balance = customer_details.get('outstanding_balance')
-        outstanding_balance=format_in_bangladeshi_currency(outstanding_balance)
+        outstanding_balance=format_in_bangladeshi_currency(outstanding_balance,is_abs=False)
         # voucher_no = doc.name
         # mode_of_payment = doc.mode_of_payment
         paid_amount = doc.paid_amount
@@ -85,7 +85,7 @@ def send_email_notification(doc,method):
         if method == "on_submit":
             transaction_data = {
                 "Customer Name": party_name,
-                "Transaction Date": f"{posting_date} {posting_time}",
+                "Transaction Date": f"{posting_date}, {posting_time}",
                 "Transaction Amount": paid_amount,
                 "Transaction Type": "Payment Entry",
                 "Outstanding Amount": outstanding_balance
@@ -99,12 +99,12 @@ def send_email_notification(doc,method):
             
             """
             
-            frappe.sendmail(recipients=email_id, subject=subject, message=message, attachments=[pdf_data] if attachment_permission else [])
+            frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
                 
         if method == "on_cancel":
             transaction_data = {
                 "Customer Name": party_name,
-                "Transaction Date": f"{posting_date} {posting_time}",
+                "Transaction Date": f"{posting_date}, {posting_time}",
                 "Transaction Amount": paid_amount,
                 "Transaction Type": "Payment Entry",
                 "Outstanding Amount": outstanding_balance

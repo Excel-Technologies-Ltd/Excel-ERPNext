@@ -57,6 +57,7 @@ def send_sms_notification(doc, method, account):
         return
 
     outstanding_balance = customer_details.get('outstanding_balance')
+    outstanding_balance=format_in_bangladeshi_currency(outstanding_balance,is_abs=False)
     customer_name = customer_details.get('customer_name')
     voucher_no = doc.name
     credit_amount=account.get('credit_in_account_currency')
@@ -67,8 +68,8 @@ def send_sms_notification(doc, method, account):
     posting_time = format_time_to_ampm(doc.modified)
     # Condition: Rebate 
     if account.get('is_rebate')== "Rebate":
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} adjusted on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}.Outstanding:Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}=.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
         if method == "on_cancel":
@@ -76,8 +77,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Ledger Debit = Ledger Adjustment
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)} adjusted on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}.Outstanding:Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
@@ -85,8 +86,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Credit Note
     if doc.voucher_type == 'Credit Note':
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount) } adjusted against on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}.Outstanding:Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount) } adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
@@ -95,8 +96,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Receive Entry = Payment Entry
     if doc.voucher_type == 'Receive Entry':
-        message = f"{customer_name},Tk.{ credit_amount} received on {posting_date},{posting_time}.Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True)}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{credit_amount}.Outstanding:Tk. {format_in_bangladeshi_currency(outstanding_balance,sms=True)}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
@@ -118,7 +119,7 @@ def send_email_notification(doc, method, account):
     if len(email_id) == 0:
         return
     outstanding_balance = customer_details.get('outstanding_balance')
-    outstanding_balance=format_in_bangladeshi_currency(outstanding_balance)
+    outstanding_balance=format_in_bangladeshi_currency(outstanding_balance,is_abs=False)
     customer_name = customer_details.get('customer_name')
     sales_person_email = customer_details.get('sales_person_email')
     sales_person_name = customer_details.get('sales_person_name')
@@ -140,8 +141,8 @@ def send_email_notification(doc, method, account):
     if account.get('is_rebate')== "Rebate":
         transaction_data = {
             "Customer Name": customer_name,
-            "Transaction Date": f"{posting_date} {posting_time}",
-            "Transaction Amount":  credit_amount if method == "on_submit" else (debit_amount),
+            "Transaction Date": f"{posting_date}, {posting_time}",
+            "Transaction Amount":  credit_amount,
             "Transaction Type": "Rebate",
             "Outstanding Amount": outstanding_balance,
         }
@@ -166,11 +167,11 @@ def send_email_notification(doc, method, account):
         if method == "on_cancel":
             frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
         return  
-    if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
+    if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and get_debit_amount != 0:
         subject = "ETL - Ledger Transaction Notification"
         transaction_data = {
             "Customer Name": customer_name,
-            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Date": f"{posting_date}, {posting_time}",
             "Transaction Amount": debit_amount,
             "Transaction Type": "Ledger Adjustment",
             "Outstanding Amount": outstanding_balance,
@@ -197,7 +198,7 @@ def send_email_notification(doc, method, account):
         subject = "ETL - Ledger Transaction Notification"
         transaction_data = {
             "Customer Name": customer_name,
-            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Date": f"{posting_date}, {posting_time}",
             "Transaction Amount": credit_amount,
             "Transaction Type": "Credit Note",
             "Outstanding Amount": outstanding_balance,
@@ -217,13 +218,13 @@ def send_email_notification(doc, method, account):
         if method == "on_submit":
             frappe.sendmail(recipients=email_id, subject=subject, message=message,attachments=[pdf_data] if attachment_permission else [])
         if method == "on_cancel":
-            frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message)
+            frappe.sendmail(recipients=email_id, subject=cancel_subject, message=cancel_message )
         return 
     if doc.voucher_type == 'Receive Entry' :
         subject = "ETL - Payment Notification"
         transaction_data = {
             "Customer Name": customer_name,
-            "Transaction Date": f"{posting_date} {posting_time}",
+            "Transaction Date": f"{posting_date}, {posting_time}",
             "Transaction Amount": credit_amount,
             "Transaction Type": "Payment Entry",
             "Outstanding Amount": outstanding_balance,
