@@ -408,3 +408,34 @@ def get_All_Sales_And_Taxes_Details():
         template["taxes"] = taxes
     
     return sales_templates
+
+@frappe.whitelist()
+def get_sales_and_delivery_data_by_id(sales_invoice_id):
+    # Construct SQL query
+    query = """
+    SELECT 
+        sii.item_code,
+        SUM(sii.qty) AS sales_qty,
+        SUM(sii.stock_qty) AS sales_stock_qty,
+        sii.parent AS sales_invoice_id,
+        COALESCE(SUM(dni.qty), 0) AS delivery_qty,
+        COALESCE(SUM(dni.stock_qty), 0) AS delivery_stock_qty,
+        (SUM(sii.qty) - COALESCE(SUM(dni.qty), 0)) AS remaining,
+        sii.warehouse as warehouse
+    FROM 
+        `tabSales Invoice Item` sii
+    LEFT JOIN 
+        `tabDelivery Note Item` dni
+        ON sii.item_code = dni.item_code
+        AND dni.against_sales_invoice = %s
+        AND dni.qty > 0
+    WHERE 
+        sii.parent = %s
+    GROUP BY 
+        sii.item_code, sii.parent;
+    """
+    
+    # Execute the query and fetch data
+    data = frappe.db.sql(query, (sales_invoice_id, sales_invoice_id), as_dict=True)
+    
+    return data
