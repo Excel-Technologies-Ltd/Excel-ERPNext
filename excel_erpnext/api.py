@@ -439,3 +439,126 @@ def get_sales_and_delivery_data_by_id(sales_invoice_id):
     data = frappe.db.sql(query, (sales_invoice_id, sales_invoice_id), as_dict=True)
     
     return data
+    
+    
+@frappe.whitelist(allow_guest=True)
+def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_date='2025-12-31', page=1,page_size=20):
+    """
+    Get transaction amounts grouped by sales person with pagination support.
+    
+    :param salespersons: Single sales person name or list of sales person names
+    :param start_date: Start date for filtering transactions (required)
+    :param end_date: End date for filtering transactions (required)
+    :param mode_of_payment: Payment mode (default: "Cheque in Hand")
+    :return: Dictionary with transaction data and pagination information
+    """
+      # Default page is 1
+      # Default page size is 20
+    
+    # Check if required parameters are present
+    if not start_date or not end_date:
+        frappe.throw('start_date and end_date are required parameters')
+    
+    # Base SQL query for fetching data (grouped by salesperson)
+    sql_query = """
+        SELECT 
+            pmnt.name,
+            pmnt.reference_no,
+            pmnt.paid_amount,
+            cu.excel_sales_person_name,
+            cu.customer_name,
+            cu.excel_sales_person_email,
+            st.sales_person
+        FROM 
+            `tabPayment Entry` AS pmnt
+        LEFT JOIN 
+            `tabCustomer` AS cu ON pmnt.party = cu.name
+        LEFT JOIN 
+            `tabSales Team` AS st ON cu.name = st.parent
+        WHERE 
+            pmnt.mode_of_payment = %(mode_of_payment)s
+        AND pmnt.docstatus = 0
+        AND pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s
+    """
+    
+    # Parameters dictionary
+    params = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "mode_of_payment": mode_of_payment
+    }
+    
+  
+    if sales_person_email:
+        if isinstance(sales_person_email, str):  # Convert single item string to a list
+            sales_person_email = [sales_person_email]
+        elif not isinstance(sales_person_email, list):  # Ensure salespersons is a list
+            frappe.throw("Invalid 'sales_person_email' format. It should be a list of salesperson names.")
+        
+        # Add sales person filter using IN clause with proper parameterization
+        sql_query += " AND cu.excel_sales_person_email IN %(sales_person_email)s"
+        params["sales_person_email"] = tuple(sales_person_email)
+    
+    # Pagination and count query
+    count_query = """
+        SELECT COUNT(*) AS total_count
+        FROM `tabPayment Entry` AS pmnt
+        LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
+        LEFT JOIN `tabSales Team` AS st ON cu.name = st.parent
+        WHERE 
+            pmnt.mode_of_payment = %(mode_of_payment)s
+        AND pmnt.docstatus = 0
+        AND pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s
+    """
+    
+    # Add salespersons filter to count query if applicable
+    if sales_person_email:
+        count_query += " AND cu.excel_sales_person_email IN %(sales_person_email)s"
+        params["sales_person_email"] = tuple(sales_person_email)
+    
+    # Apply pagination to the main query
+    sql_query += " LIMIT %(page_size)s OFFSET %(offset)s"
+    params["page_size"] = page_size
+    params["offset"] = (page - 1) * page_size
+    
+    # Execute count query for total documents
+    try:
+        count_result = frappe.db.sql(count_query, params, as_dict=True)
+        total_count = count_result[0]["total_count"] if count_result else 0
+    
+        # Execute the paginated query
+        result = frappe.db.sql(sql_query, params, as_dict=True)
+    
+        # Group the results by sales person
+        grouped_result = {}
+        for row in result:
+            sales_person = row["sales_person"]
+            if sales_person not in grouped_result:
+                grouped_result[sales_person] = []
+            grouped_result[sales_person].append({
+                "name": row["name"],
+                "reference_no": row["reference_no"],
+                "paid_amount": row["paid_amount"],
+                "excel_sales_person_name": row["excel_sales_person_name"],
+                "customer_name": row["customer_name"],
+                "excel_sales_person_email": row["excel_sales_person_email"]
+            })
+    
+        # Calculate pagination details
+        total_pages = (total_count // page_size) + (1 if total_count % page_size > 0 else 0)
+        next_page = page + 1 if page < total_pages else None
+        previous_page = page - 1 if page > 1 else None
+    
+        # Prepare the response
+        frappe.response['message'] = {
+            'data': grouped_result,
+            'total_count': total_count,
+            'total_pages': total_pages,
+            'current_page': page,
+            'next_page': next_page,
+            'previous_page': previous_page
+        }
+    
+    except Exception as e:
+        frappe.response['message'] = f"Error executing query: {str(e)}"
+        frappe.log_error(f"Error in get_transaction_amount_by_sales_person: {str(e)}")
