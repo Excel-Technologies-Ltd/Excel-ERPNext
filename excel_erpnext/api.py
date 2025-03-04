@@ -320,7 +320,7 @@ def update_item_bottom_price(item_code, price):
     try:
         # Check if the item price exists for the specified criteria
         check_item_price = frappe.db.exists('Item Price', {"item_code": item_code, "price_list": 'Bottom Price',"selling":1})
-        
+        print("check_item_price",check_item_price)
         if not check_item_price:
             new_doc= frappe.get_doc({"doctype":"Item Price","item_code":item_code,"price_list":"Bottom Price","selling":1,"price_list_rate":price})
             new_doc.insert()
@@ -328,9 +328,14 @@ def update_item_bottom_price(item_code, price):
             return {"status": "success", "message": "Price created successfully","item":new_doc}
         
         # Update the price if the item exists
-        frappe.db.set_value('Item Price', check_item_price, 'price_list_rate', price)
+        item_price= frappe.get_doc('Item Price', check_item_price)
+        print(item_price)
+        item_price.price_list_rate = price
+        item_price.save()
         frappe.db.commit()
-        return {"status": "success", "message": "Price updated successfully","item":check_item_price}
+        # frappe.db.set_value('Item Price', check_item_price, 'price_list_rate', price)
+        # frappe.db.commit()
+        return {"status": "success", "message": "Price updated successfully","item":item_price}
     
     except frappe.exceptions.DoesNotExistError:
         return {"status": "error", "message": "Item Price document does not exist"}
@@ -441,25 +446,22 @@ def get_sales_and_delivery_data_by_id(sales_invoice_id):
     return data
     
     
-@frappe.whitelist(allow_guest=True)
-def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_date='2025-12-31', page=1,page_size=20):
+@frappe.whitelist()
+def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_date='2025-12-31'):
     """
-    Get transaction amounts grouped by sales person with pagination support.
-    
-    :param salespersons: Single sales person name or list of sales person names
+    Get transaction amounts grouped by sales person.
+
+    :param sales_person_email: Single sales person email or list of sales person emails (optional)
     :param start_date: Start date for filtering transactions (required)
     :param end_date: End date for filtering transactions (required)
-    :param mode_of_payment: Payment mode (default: "Cheque in Hand")
-    :return: Dictionary with transaction data and pagination information
+    :return: Dictionary with transaction data grouped by sales person
     """
-      # Default page is 1
-      # Default page size is 20
     
-    # Check if required parameters are present
+    # Ensure required parameters are present
     if not start_date or not end_date:
         frappe.throw('start_date and end_date are required parameters')
     
-    # Base SQL query for fetching data (grouped by salesperson)
+    # Base SQL query
     sql_query = """
         SELECT 
             pmnt.name,
@@ -476,7 +478,7 @@ def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_dat
         LEFT JOIN 
             `tabSales Team` AS st ON cu.name = st.parent
         WHERE 
-            pmnt.mode_of_payment = %(mode_of_payment)s
+            pmnt.mode_of_payment = 'Cheque in Hand'
         AND pmnt.docstatus = 0
         AND pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s
     """
@@ -484,52 +486,24 @@ def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_dat
     # Parameters dictionary
     params = {
         "start_date": start_date,
-        "end_date": end_date,
-        "mode_of_payment": mode_of_payment
+        "end_date": end_date
     }
     
-  
     if sales_person_email:
         if isinstance(sales_person_email, str):  # Convert single item string to a list
             sales_person_email = [sales_person_email]
-        elif not isinstance(sales_person_email, list):  # Ensure salespersons is a list
-            frappe.throw("Invalid 'sales_person_email' format. It should be a list of salesperson names.")
+        elif not isinstance(sales_person_email, list):  # Ensure sales_person_email is a list
+            frappe.throw("Invalid 'sales_person_email' format. It should be a list of emails.")
         
-        # Add sales person filter using IN clause with proper parameterization
+        # Add filter for sales person email
         sql_query += " AND cu.excel_sales_person_email IN %(sales_person_email)s"
         params["sales_person_email"] = tuple(sales_person_email)
     
-    # Pagination and count query
-    count_query = """
-        SELECT COUNT(*) AS total_count
-        FROM `tabPayment Entry` AS pmnt
-        LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
-        LEFT JOIN `tabSales Team` AS st ON cu.name = st.parent
-        WHERE 
-            pmnt.mode_of_payment = %(mode_of_payment)s
-        AND pmnt.docstatus = 0
-        AND pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s
-    """
-    
-    # Add salespersons filter to count query if applicable
-    if sales_person_email:
-        count_query += " AND cu.excel_sales_person_email IN %(sales_person_email)s"
-        params["sales_person_email"] = tuple(sales_person_email)
-    
-    # Apply pagination to the main query
-    sql_query += " LIMIT %(page_size)s OFFSET %(offset)s"
-    params["page_size"] = page_size
-    params["offset"] = (page - 1) * page_size
-    
-    # Execute count query for total documents
+    # Execute query
     try:
-        count_result = frappe.db.sql(count_query, params, as_dict=True)
-        total_count = count_result[0]["total_count"] if count_result else 0
-    
-        # Execute the paginated query
         result = frappe.db.sql(sql_query, params, as_dict=True)
-    
-        # Group the results by sales person
+        
+        # Group results by sales person
         grouped_result = {}
         for row in result:
             sales_person = row["sales_person"]
@@ -543,22 +517,149 @@ def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_dat
                 "customer_name": row["customer_name"],
                 "excel_sales_person_email": row["excel_sales_person_email"]
             })
-    
-        # Calculate pagination details
-        total_pages = (total_count // page_size) + (1 if total_count % page_size > 0 else 0)
-        next_page = page + 1 if page < total_pages else None
-        previous_page = page - 1 if page > 1 else None
-    
-        # Prepare the response
+        
+        # Return response
         frappe.response['message'] = {
             'data': grouped_result,
-            'total_count': total_count,
-            'total_pages': total_pages,
-            'current_page': page,
-            'next_page': next_page,
-            'previous_page': previous_page
+            'total_count': len(result)  # Total number of records
         }
     
     except Exception as e:
         frappe.response['message'] = f"Error executing query: {str(e)}"
-        frappe.log_error(f"Error in get_transaction_amount_by_sales_person: {str(e)}")
+        frappe.log_error(f"Error in get_cheque_in_hand: {str(e)}")
+
+
+
+@frappe.whitelist()
+def get_cheque_collection(sales_person_email, date=None):
+    """
+    Get today's cheque collection for a given sales person.
+
+    :param sales_person_email: Email of the sales person (required)
+    :param date: Date for filtering transactions (default: today)
+    :return: List of cheque collections
+    """
+    
+    if not sales_person_email:
+        frappe.throw("sales_person_email is required")
+
+    # Default to today's date if no date is provided
+    if not date:
+        date = frappe.utils.today()
+
+    # SQL Query
+    sql_query = """
+        SELECT 
+            pmnt.name,
+            pmnt.reference_no,
+            pmnt.paid_amount,
+            cu.excel_sales_person_name,
+            cu.customer_name,
+            cu.excel_sales_person_email
+        FROM 
+            `tabPayment Entry` AS pmnt
+        LEFT JOIN 
+            `tabCustomer` AS cu ON pmnt.party = cu.name
+        WHERE 
+            pmnt.party_type = 'Customer'
+            AND pmnt.docstatus = 1
+            AND pmnt.posting_date = %(date)s
+            AND cu.excel_sales_person_email = %(sales_person_email)s
+    """
+
+    # Query parameters
+    params = {
+        "date": date,
+        "sales_person_email": sales_person_email
+    }
+
+    # Execute the query
+    try:
+        result = frappe.db.sql(sql_query, params, as_dict=True)
+        
+        # Return response
+        frappe.response['message'] = {
+            "data": result,
+            "total_count": len(result)
+        }
+
+    except Exception as e:
+        frappe.response['message'] = f"Error executing query: {str(e)}"
+        frappe.log_error(f"Error in get_cheque_collection: {str(e)}")
+
+
+@frappe.whitelist()
+def get_doctype_count():
+    """
+    Get the count of records for a given Doctype.
+
+    :return: Count of records in the specified Doctype
+    """
+    
+    # Fetch Doctype from request
+    doctype = frappe.form_dict.get("doctype")
+    
+    if not doctype:
+        frappe.throw("Doctype name missing")
+    
+    try:
+        # Get the count of records in the specified Doctype using get_list
+        count = len(frappe.get_list(doctype, filters={}, ignore_permissions=False))
+        
+        # Return response
+        frappe.response['message'] = {doctype: count}
+    
+    except Exception as e:
+        frappe.response['message'] = f"Error fetching count: {str(e)}"
+        frappe.log_error(f"Error in get_doctype_count: {str(e)}")
+
+
+@frappe.whitelist(allow_guest=True)
+def get_stock_reconciliation(customer=None, start_date=None, end_date=None, items=None):
+    """
+    Get sales invoice item details based on customer, start_date, end_date, and optional item codes.
+
+    :return: List of sales invoice items matching the criteria.
+    """
+
+
+    # Check if required parameters are present
+    if not customer or not start_date or not end_date:
+        frappe.throw('Customer, start_date, and end_date are required parameters')
+
+    # Base SQL query
+    sql_query = """
+        SELECT sii.*
+        FROM `tabSales Invoice` as si
+        LEFT JOIN `tabSales Invoice Item` as sii ON si.name = sii.parent
+        WHERE 
+            si.customer = %(customer)s
+            AND si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND si.posting_date BETWEEN %(start_date)s AND %(end_date)s
+    """
+
+    # Parameters dictionary
+    params = {
+        "customer": customer,
+        "start_date": start_date,
+        "end_date": end_date
+    }
+
+    # Handle 'items' correctly
+    if items:
+        if isinstance(items, str):  # Convert single item string to a list
+            items = [items]
+        elif not isinstance(items, list):  # Ensure items is a list
+            frappe.throw("Invalid 'items' format. It should be a list of item codes.")
+
+        sql_query += " AND sii.item_code IN %(items)s"
+        params["items"] = tuple(items)  # Convert to tuple for SQL compatibility
+
+    # Execute the query safely
+    try:
+        result = frappe.db.sql(sql_query, params, as_dict=True)
+        frappe.response['message'] = result
+    except Exception as e:
+        frappe.response['message'] = f"Error executing query: {str(e)}"
+        frappe.log_error(f"Error in get_stock_reconciliation: {str(e)}")

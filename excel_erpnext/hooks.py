@@ -283,6 +283,6 @@ scheduler_events = {
 #         ]
 #     },
 # ]
-fixtures = [  'Custom Field',  'Property Setter']
+fixtures = [  'Custom Field']
 
 
