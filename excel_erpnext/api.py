@@ -531,21 +531,24 @@ def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_dat
 
 
 @frappe.whitelist()
-def get_cheque_collection(sales_person_email, date=None):
+def get_cheque_collection(sales_person_email, start_date=None, end_date=None):
     """
-    Get today's cheque collection for a given sales person.
+    Get cheque collections for a given sales person within a date range.
 
     :param sales_person_email: Email of the sales person (required)
-    :param date: Date for filtering transactions (default: today)
+    :param start_date: Start date for filtering transactions (default: today)
+    :param end_date: End date for filtering transactions (default: today)
     :return: List of cheque collections
     """
     
     if not sales_person_email:
         frappe.throw("sales_person_email is required")
 
-    # Default to today's date if no date is provided
-    if not date:
-        date = frappe.utils.today()
+    # Default to today's date if no dates are provided
+    if not start_date:
+        start_date = frappe.utils.today()
+    if not end_date:
+        end_date = frappe.utils.today()
 
     # SQL Query
     sql_query = """
@@ -563,13 +566,14 @@ def get_cheque_collection(sales_person_email, date=None):
         WHERE 
             pmnt.party_type = 'Customer'
             AND pmnt.docstatus = 1
-            AND pmnt.posting_date = %(date)s
+            AND pmnt.posting_date BETWEEN %(start_date)s AND %(end_date)s
             AND cu.excel_sales_person_email = %(sales_person_email)s
     """
 
     # Query parameters
     params = {
-        "date": date,
+        "start_date": start_date,
+        "end_date": end_date,
         "sales_person_email": sales_person_email
     }
 
@@ -586,6 +590,7 @@ def get_cheque_collection(sales_person_email, date=None):
     except Exception as e:
         frappe.response['message'] = f"Error executing query: {str(e)}"
         frappe.log_error(f"Error in get_cheque_collection: {str(e)}")
+
 
 
 @frappe.whitelist()
