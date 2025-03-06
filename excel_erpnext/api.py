@@ -3,6 +3,7 @@ import base64
 from io import BytesIO
 from PIL import Image, ImageOps
 from weasyprint import HTML
+from frappe.utils import today, add_days, cint
 
 # Configuration for API requests
 API_BASE_URL = "https://your-frappe-instance/api/resource"  # Replace with your Frappe instance URL
@@ -668,3 +669,123 @@ def get_stock_reconciliation(customer=None, start_date=None, end_date=None, item
     except Exception as e:
         frappe.response['message'] = f"Error executing query: {str(e)}"
         frappe.log_error(f"Error in get_stock_reconciliation: {str(e)}")
+
+
+@frappe.whitelist()
+def monthly_sales_by_sales_person(sales_person_email, interval_days=30):
+    interval_days = cint(interval_days)
+
+    query = """
+    SELECT 
+        cu.excel_sales_person_email AS sales_person,
+        DATE_FORMAT(si.posting_date, '%%Y-%%m') AS sales_month,
+        SUM(si.grand_total) AS total_sales
+    FROM `tabSales Invoice` AS si
+    LEFT JOIN `tabCustomer` AS cu 
+        ON si.customer = cu.name
+    WHERE si.docstatus = 1
+    AND si.name LIKE '%%SINV%%'
+    AND cu.excel_sales_person_email = %(sales_person_email)s
+    AND si.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
+    GROUP BY cu.excel_sales_person_email, sales_month
+    ORDER BY sales_month DESC
+    """
+
+    data = frappe.db.sql(query, {
+        'sales_person_email': sales_person_email,
+        'interval_days': interval_days
+    }, as_dict=True)
+
+    return data
+
+
+@frappe.whitelist()
+def non_billed_brand(sales_person_email, interval_days=30):
+    """
+    Fetches non-billed brands for a sales person within a given interval.
+    
+    :param sales_person_email: The sales person's email (linked via excel_sales_person_email in Customer)
+    :param interval_days: Number of days to check for recent invoices (default 30 days)
+    :return: List of dicts containing brand, last_invoice_date, and sales_person
+    """
+    interval_days = cint(interval_days)
+    query = """
+        SELECT 
+            sii.brand,
+            MAX(si.posting_date) AS last_invoice_date,
+            sp.name AS sales_person
+        FROM `tabSales Invoice` AS si
+        LEFT JOIN `tabSales Invoice Item` AS sii 
+            ON si.name = sii.parent
+        LEFT JOIN `tabCustomer` AS cu 
+            ON si.customer = cu.name
+        LEFT JOIN `tabSales Person` AS sp 
+            ON cu.excel_sales_person_email = sp.excel_sales_person_email
+        WHERE cu.excel_sales_person_email = %(sales_person_email)s
+        AND si.docstatus = 1
+        AND si.name LIKE '%%SINV%%'
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM `tabSales Invoice` AS si_check
+            WHERE si_check.customer = si.customer
+            AND si_check.docstatus = 1
+            AND si_check.name LIKE '%%SINV%%'
+            AND si_check.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
+        )
+        GROUP BY sii.brand, sp.name
+        ORDER BY last_invoice_date DESC
+    """
+
+    data = frappe.db.sql(
+        query, 
+        {"sales_person_email": sales_person_email, "interval_days": interval_days}, 
+        as_dict=True
+    )
+
+    return data
+
+
+@frappe.whitelist()
+def non_billed_customer(sales_person_email, interval_days=30):
+    
+    """
+    Fetch customers assigned to a sales person who haven't been billed within the last given days.
+
+    :param sales_person_email: Email of the sales person (linked via excel_sales_person_email in Customer)
+    :param interval_days: Number of days to check for recent invoices (default is 30 days)
+    :return: List of dicts with customer, customer_name, last_invoice_date, and sales_person
+    """
+    interval_days = cint(interval_days)
+    query = """
+        SELECT 
+            cu.name AS customer, 
+            cu.customer_name AS customer_name, 
+            (
+                SELECT MAX(si.posting_date) 
+                FROM `tabSales Invoice` AS si 
+                WHERE si.customer = cu.name 
+                AND si.docstatus = 1
+                AND si.name LIKE '%%SINV%%'
+            ) AS last_invoice_date,
+            sp.name AS sales_person
+        FROM `tabCustomer` AS cu
+        LEFT JOIN `tabSales Person` AS sp 
+            ON cu.excel_sales_person_email = sp.excel_sales_person_email
+        WHERE cu.excel_sales_person_email = %(sales_person_email)s
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM `tabSales Invoice` AS si
+            WHERE si.customer = cu.name
+            AND si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND si.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
+        )
+    """
+
+    data = frappe.db.sql(
+        query, 
+        {"sales_person_email": sales_person_email, "interval_days": interval_days}, 
+        as_dict=True
+    )
+
+    return data
