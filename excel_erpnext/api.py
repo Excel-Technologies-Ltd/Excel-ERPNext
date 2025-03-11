@@ -505,23 +505,23 @@ def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_dat
         result = frappe.db.sql(sql_query, params, as_dict=True)
         
         # Group results by sales person
-        grouped_result = {}
-        for row in result:
-            sales_person = row["sales_person"]
-            if sales_person not in grouped_result:
-                grouped_result[sales_person] = []
-            grouped_result[sales_person].append({
-                "name": row["name"],
-                "reference_no": row["reference_no"],
-                "paid_amount": row["paid_amount"],
-                "excel_sales_person_name": row["excel_sales_person_name"],
-                "customer_name": row["customer_name"],
-                "excel_sales_person_email": row["excel_sales_person_email"]
-            })
+        # grouped_result = {}
+        # for row in result:
+        #     sales_person = row["sales_person"]
+        #     if sales_person not in grouped_result:
+        #         grouped_result[sales_person] = []
+        #     grouped_result[sales_person].append({
+        #         "name": row["name"],
+        #         "reference_no": row["reference_no"],
+        #         "paid_amount": row["paid_amount"],
+        #         "excel_sales_person_name": row["excel_sales_person_name"],
+        #         "customer_name": row["customer_name"],
+        #         "excel_sales_person_email": row["excel_sales_person_email"]
+        #     })
         
         # Return response
         frappe.response['message'] = {
-            'data': grouped_result,
+            'data': result,
             'total_count': len(result)  # Total number of records
         }
     
@@ -672,7 +672,7 @@ def get_stock_reconciliation(customer=None, start_date=None, end_date=None, item
 
 
 @frappe.whitelist()
-def monthly_sales_by_sales_person(sales_person_email, interval_days=30):
+def monthly_sales_by_sales_person(sales_person_email="akramul.sales@excelbd.com", interval_days=100):
     interval_days = cint(interval_days)
 
     query = """
@@ -700,7 +700,7 @@ def monthly_sales_by_sales_person(sales_person_email, interval_days=30):
 
 
 @frappe.whitelist()
-def non_billed_brand(sales_person_email, interval_days=30):
+def non_billed_brands(sales_person_email="akramul.sales@excelbd.com", interval_days=30):
     """
     Fetches non-billed brands for a sales person within a given interval.
     
@@ -708,7 +708,7 @@ def non_billed_brand(sales_person_email, interval_days=30):
     :param interval_days: Number of days to check for recent invoices (default 30 days)
     :return: List of dicts containing brand, last_invoice_date, and sales_person
     """
-    interval_days = cint(interval_days)
+    
     query = """
         SELECT 
             sii.brand,
@@ -746,7 +746,7 @@ def non_billed_brand(sales_person_email, interval_days=30):
 
 
 @frappe.whitelist()
-def non_billed_customer(sales_person_email, interval_days=30):
+def non_billed_customers(sales_person_email="akramul.sales@excelbd.com", interval_days=30):
     
     """
     Fetch customers assigned to a sales person who haven't been billed within the last given days.
