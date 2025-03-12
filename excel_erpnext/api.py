@@ -448,149 +448,159 @@ def get_sales_and_delivery_data_by_id(sales_invoice_id):
     
     
 @frappe.whitelist()
-def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_date='2025-12-31'):
+def get_cheque_in_hand(sales_person_email=None, start_date='2025-01-01', end_date='2025-12-31', page=1, page_size=10):
     """
-    Get transaction amounts grouped by sales person.
-
-    :param sales_person_email: Single sales person email or list of sales person emails (optional)
-    :param start_date: Start date for filtering transactions (required)
-    :param end_date: End date for filtering transactions (required)
-    :return: Dictionary with transaction data grouped by sales person
+    Fetches payment entries with mode_of_payment='Cheque in Hand', filtered by optional sales_person_email and date range.
+    Supports pagination.
     """
-    
-    # Ensure required parameters are present
-    if not start_date or not end_date:
-        frappe.throw('start_date and end_date are required parameters')
-    
-    # Base SQL query
-    sql_query = """
-        SELECT 
-            pmnt.name,
-            pmnt.reference_no,
-            pmnt.paid_amount,
-            cu.excel_sales_person_name,
-            cu.customer_name,
-            cu.excel_sales_person_email,
-            st.sales_person
-        FROM 
-            `tabPayment Entry` AS pmnt
-        LEFT JOIN 
-            `tabCustomer` AS cu ON pmnt.party = cu.name
-        LEFT JOIN 
-            `tabSales Team` AS st ON cu.name = st.parent
-        WHERE 
-            pmnt.mode_of_payment = 'Cheque in Hand'
-        AND pmnt.docstatus = 0
-        AND pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s
-    """
-    
-    # Parameters dictionary
-    params = {
-        "start_date": start_date,
-        "end_date": end_date
-    }
-    
-    if sales_person_email:
-        if isinstance(sales_person_email, str):  # Convert single item string to a list
-            sales_person_email = [sales_person_email]
-        elif not isinstance(sales_person_email, list):  # Ensure sales_person_email is a list
-            frappe.throw("Invalid 'sales_person_email' format. It should be a list of emails.")
-        
-        # Add filter for sales person email
-        sql_query += " AND cu.excel_sales_person_email IN %(sales_person_email)s"
-        params["sales_person_email"] = tuple(sales_person_email)
-    
-    # Execute query
     try:
-        result = frappe.db.sql(sql_query, params, as_dict=True)
+        offset = (page - 1) * page_size
         
-        # Group results by sales person
-        # grouped_result = {}
-        # for row in result:
-        #     sales_person = row["sales_person"]
-        #     if sales_person not in grouped_result:
-        #         grouped_result[sales_person] = []
-        #     grouped_result[sales_person].append({
-        #         "name": row["name"],
-        #         "reference_no": row["reference_no"],
-        #         "paid_amount": row["paid_amount"],
-        #         "excel_sales_person_name": row["excel_sales_person_name"],
-        #         "customer_name": row["customer_name"],
-        #         "excel_sales_person_email": row["excel_sales_person_email"]
-        #     })
+        conditions = [
+            "pmnt.mode_of_payment = 'Cheque in Hand'",
+            "pmnt.docstatus = 0",
+            "pmnt.reference_date BETWEEN %(start_date)s AND %(end_date)s"
+        ]
         
-        # Return response
-        frappe.response['message'] = {
-            'data': result,
-            'total_count': len(result)  # Total number of records
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
         }
-    
+        
+        if sales_person_email:
+            conditions.append("cu.excel_sales_person_email = %(sales_person_email)s")
+            params["sales_person_email"] = sales_person_email
+        
+        query = f"""
+            SELECT 
+                pmnt.name,
+                pmnt.mode_of_payment,
+                pmnt.posting_date,
+                pmnt.reference_no,
+                pmnt.paid_amount,
+                cu.excel_sales_person_name,
+                cu.customer_name,
+                cu.excel_sales_person_email,
+                st.sales_person,
+                cu.territory,
+                cu.customer_group
+            FROM `tabPayment Entry` AS pmnt
+            LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
+            LEFT JOIN `tabSales Team` AS st ON cu.name = st.parent
+            WHERE {' AND '.join(conditions)}
+            LIMIT {page_size} OFFSET {offset}
+        """
+        
+        data = frappe.db.sql(query, params, as_dict=True)
+        
+        total_query = f"""
+            SELECT COUNT(*) as total
+            FROM `tabPayment Entry` AS pmnt
+            LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
+            LEFT JOIN `tabSales Team` AS st ON cu.name = st.parent
+            WHERE {' AND '.join(conditions)}
+        """
+        
+        total_records = frappe.db.sql(total_query, params, as_dict=True)[0]["total"]
+        total_pages = (total_records + page_size - 1) // page_size
+        
+        return {
+            "data": data,
+            "pagination": {
+                "total_records": total_records,
+                "total_pages": total_pages,
+                "current_page": page,
+                "page_size": page_size
+            }
+        }
     except Exception as e:
-        frappe.response['message'] = f"Error executing query: {str(e)}"
-        frappe.log_error(f"Error in get_cheque_in_hand: {str(e)}")
+        frappe.log_error(f"Error fetching cheque in hand data: {str(e)}", "get_cheque_in_hand")
+        return {
+            "error": "An error occurred while fetching data.",
+            "details": str(e)
+        }
+
+
+
 
 
 
 @frappe.whitelist()
-def get_cheque_collection(sales_person_email, start_date=None, end_date=None):
-    """
-    Get cheque collections for a given sales person within a date range.
+def get_cheque_collection(sales_person_email=None, start_date="2025-01-01", end_date="2025-12-31", page=1, page_size=20):
 
-    :param sales_person_email: Email of the sales person (required)
-    :param start_date: Start date for filtering transactions (default: today)
-    :param end_date: End date for filtering transactions (default: today)
-    :return: List of cheque collections
-    """
-    
+
     if not sales_person_email:
-        frappe.throw("sales_person_email is required")
+        frappe.throw("Sales Person Email is required")
 
-    # Default to today's date if no dates are provided
-    if not start_date:
-        start_date = frappe.utils.today()
-    if not end_date:
-        end_date = frappe.utils.today()
+    offset = (int(page) - 1) * page_size
 
-    # SQL Query
-    sql_query = """
+    count_query = """
+        SELECT COUNT(*) as total_count
+        FROM `tabPayment Entry` pmnt
+        LEFT JOIN `tabCustomer` cu ON pmnt.party = cu.name
+        WHERE
+            pmnt.docstatus = 1
+            AND pmnt.payment_type = 'Receive'
+            AND pmnt.mode_of_payment = 'Cheque'
+            AND pmnt.reference_no IS NOT NULL
+            AND pmnt.posting_date BETWEEN %(start_date)s AND %(end_date)s
+            AND EXISTS(
+                SELECT 1 FROM `tabUser Permission` up
+                WHERE up.user = %(user)s
+                AND (
+                    (up.allow = 'Customer' AND cu.name = up.for_value) OR
+                    (up.allow = 'Customer Group' AND cu.customer_group = up.for_value) OR
+                    (up.allow = 'Territory' AND cu.territory = up.for_value)
+                )
+            )
+    """
+    total_count = frappe.db.sql(count_query, {"user": sales_person_email, "start_date": start_date, "end_date": end_date}, as_dict=True)[0].get("total_count", 0)
+
+    query = """
         SELECT 
-            pmnt.name,
             pmnt.reference_no,
+            pmnt.name as payment_entry,
             pmnt.paid_amount,
+            pmnt.reference_no,
+            pmnt.posting_date,
             cu.excel_sales_person_name,
             cu.customer_name,
-            cu.excel_sales_person_email
-        FROM 
-            `tabPayment Entry` AS pmnt
-        LEFT JOIN 
-            `tabCustomer` AS cu ON pmnt.party = cu.name
-        WHERE 
-            pmnt.party_type = 'Customer'
-            AND pmnt.docstatus = 1
+            cu.excel_sales_person_email,
+            cu.territory,
+            cu.customer_group
+        FROM `tabPayment Entry` pmnt
+        LEFT JOIN `tabCustomer` cu ON pmnt.party = cu.name
+        WHERE
+            pmnt.docstatus = 1
+            AND pmnt.payment_type = 'Receive'
+            AND pmnt.mode_of_payment = 'Cheque'
+            AND pmnt.reference_no IS NOT NULL
             AND pmnt.posting_date BETWEEN %(start_date)s AND %(end_date)s
-            AND cu.excel_sales_person_email = %(sales_person_email)s
+            AND EXISTS(
+                SELECT 1 FROM `tabUser Permission` up
+                WHERE up.user = %(user)s
+                AND (
+                    (up.allow = 'Customer' AND cu.name = up.for_value) OR
+                    (up.allow = 'Customer Group' AND cu.customer_group = up.for_value) OR
+                    (up.allow = 'Territory' AND cu.territory = up.for_value)
+                )
+            )
+        ORDER BY pmnt.posting_date DESC
+        LIMIT %(page_size)s OFFSET %(offset)s
     """
 
-    # Query parameters
-    params = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "sales_person_email": sales_person_email
-    }
+    data = frappe.db.sql(query, {"user": sales_person_email, "start_date": start_date, "end_date": end_date, "page_size": page_size, "offset": offset}, as_dict=True)
 
-    # Execute the query
-    try:
-        result = frappe.db.sql(sql_query, params, as_dict=True)
-        
-        # Return response
-        frappe.response['message'] = {
-            "data": result,
-            "total_count": len(result)
+    return {
+        "data": data,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "offset": offset,
+            "count": len(data),
+            "total_count": total_count
         }
-
-    except Exception as e:
-        frappe.response['message'] = f"Error executing query: {str(e)}"
-        frappe.log_error(f"Error in get_cheque_collection: {str(e)}")
+    }
 
 
 
@@ -671,121 +681,301 @@ def get_stock_reconciliation(customer=None, start_date=None, end_date=None, item
         frappe.log_error(f"Error in get_stock_reconciliation: {str(e)}")
 
 
+
+from frappe import _
+from frappe.utils import nowdate, add_days
+import math
 @frappe.whitelist()
-def monthly_sales_by_sales_person(sales_person_email="akramul.sales@excelbd.com", interval_days=100):
-    interval_days = cint(interval_days)
+def monthly_sales_by_sales_person(sales_person_email, interval_days=30, page=1, limit=10):
+    try:
+        if not sales_person_email:
+            frappe.throw(_("Sales Person Email is required"), frappe.exceptions.ValidationError)
+        
+        # Validate input parameters
+        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
+        page = int(page) if str(page).isdigit() else 1
+        limit = int(limit) if str(limit).isdigit() else 10
+        offset = (page - 1) * limit
 
-    query = """
-    SELECT 
-        cu.excel_sales_person_email AS sales_person,
-        DATE_FORMAT(si.posting_date, '%%Y-%%m') AS sales_month,
-        SUM(si.grand_total) AS total_sales
-    FROM `tabSales Invoice` AS si
-    LEFT JOIN `tabCustomer` AS cu 
-        ON si.customer = cu.name
-    WHERE si.docstatus = 1
-    AND si.name LIKE '%%SINV%%'
-    AND cu.excel_sales_person_email = %(sales_person_email)s
-    AND si.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
-    GROUP BY cu.excel_sales_person_email, sales_month
-    ORDER BY sales_month DESC
-    """
+        # Date filter
+        start_date = add_days(nowdate(), - interval_days)
 
-    data = frappe.db.sql(query, {
-        'sales_person_email': sales_person_email,
-        'interval_days': interval_days
-    }, as_dict=True)
+        # Query to get total records count for pagination
+        count_query = """
+            SELECT COUNT(DISTINCT cu.excel_sales_person_email, DATE_FORMAT(si.posting_date, '%%Y-%%m'))
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
+            WHERE si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND si.posting_date >= %(start_date)s
+            AND EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_name = up.for_value)
+                )
+            )
+        """
+        total_records = frappe.db.sql(count_query, {"email": sales_person_email, "start_date": start_date})[0][0]
+        total_pages = math.ceil(total_records / limit)
 
-    return data
+        # Main Query with Pagination
+        query = """
+            SELECT 
+                cu.excel_sales_person_email AS sales_person,
+                DATE_FORMAT(si.posting_date, '%%Y-%%m') AS sales_month,
+                SUM(si.grand_total) AS total_sales
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
+            WHERE si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND si.posting_date >= %(start_date)s
+            AND EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_name = up.for_value)
+                )
+            )
+            GROUP BY cu.excel_sales_person_email, sales_month
+            ORDER BY sales_month DESC
+            LIMIT %(limit)s OFFSET %(offset)s
+        """
+        results = frappe.db.sql(query, {"email": sales_person_email, "start_date": start_date, "limit": limit, "offset": offset}, as_dict=True)
+
+        return {
+            "data": results,
+            "pagination": {
+                "current_page": page,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "limit": limit
+            }
+        }
+    
+    except Exception as e:
+        frappe.log_error(f"Error in monthly_sales_by_sales_person: {str(e)}", "API Error")
+        frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
 
 
 @frappe.whitelist()
-def non_billed_brands(sales_person_email="akramul.sales@excelbd.com", interval_days=30):
+def non_billed_brands(sales_person_email, interval_days=30, page=1, limit=10):
     """
-    Fetches non-billed brands for a sales person within a given interval.
-    
-    :param sales_person_email: The sales person's email (linked via excel_sales_person_email in Customer)
-    :param interval_days: Number of days to check for recent invoices (default 30 days)
-    :return: List of dicts containing brand, last_invoice_date, and sales_person
+    Fetch brands that have not been billed within a given interval by a sales person.
+    Supports pagination.
     """
-    
-    query = """
-        SELECT 
-            sii.brand,
-            MAX(si.posting_date) AS last_invoice_date,
-            sp.name AS sales_person
-        FROM `tabSales Invoice` AS si
-        LEFT JOIN `tabSales Invoice Item` AS sii 
-            ON si.name = sii.parent
-        LEFT JOIN `tabCustomer` AS cu 
-            ON si.customer = cu.name
-        LEFT JOIN `tabSales Person` AS sp 
-            ON cu.excel_sales_person_email = sp.excel_sales_person_email
-        WHERE cu.excel_sales_person_email = %(sales_person_email)s
-        AND si.docstatus = 1
-        AND si.name LIKE '%%SINV%%'
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM `tabSales Invoice` AS si_check
-            WHERE si_check.customer = si.customer
-            AND si_check.docstatus = 1
-            AND si_check.name LIKE '%%SINV%%'
-            AND si_check.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
-        )
-        GROUP BY sii.brand, sp.name
-        ORDER BY last_invoice_date DESC
-    """
+    try:
+        if not sales_person_email:
+            frappe.throw(_("Sales Person Email is required"), frappe.exceptions.ValidationError)
 
-    data = frappe.db.sql(
-        query, 
-        {"sales_person_email": sales_person_email, "interval_days": interval_days}, 
-        as_dict=True
-    )
+        # Validate input parameters
+        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
+        page = int(page) if str(page).isdigit() else 1
+        limit = int(limit) if str(limit).isdigit() else 10
+        offset = (page - 1) * limit
 
-    return data
+        # Date filter
+        start_date = add_days(nowdate(), -interval_days)
+
+        # Query to count total records for pagination
+        count_query = """
+            SELECT COUNT(DISTINCT sii.brand)
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabSales Invoice Item` AS sii ON si.name = sii.parent
+            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
+            LEFT JOIN `tabSales Person` AS sp ON cu.excel_sales_person_email = sp.excel_sales_person_email
+            WHERE si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si_check
+                WHERE si_check.customer = si.customer
+                AND si_check.docstatus = 1
+                AND si_check.name LIKE '%%SINV%%'
+                AND si_check.posting_date >= %(start_date)s
+            )
+            AND EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(sales_person_email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                )
+            )
+        """
+        total_records = frappe.db.sql(count_query, {"sales_person_email": sales_person_email, "start_date": start_date})[0][0]
+        total_pages = math.ceil(total_records / limit)
+
+        # Main Query with Pagination
+        query = """
+            SELECT 
+                sii.brand,
+                MAX(si.posting_date) AS last_invoice_date,
+                sp.name AS sales_person
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabSales Invoice Item` AS sii ON si.name = sii.parent
+            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
+            LEFT JOIN `tabSales Person` AS sp ON cu.excel_sales_person_email = sp.excel_sales_person_email
+            WHERE si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si_check
+                WHERE si_check.customer = si.customer
+                AND si_check.docstatus = 1
+                AND si_check.name LIKE '%%SINV%%'
+                AND si_check.posting_date >= %(start_date)s
+            )
+            AND EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(sales_person_email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                )
+            )
+            GROUP BY sii.brand, sp.name
+            ORDER BY last_invoice_date DESC
+            LIMIT %(limit)s OFFSET %(offset)s
+        """
+        results = frappe.db.sql(query, {"sales_person_email": sales_person_email, "start_date": start_date, "limit": limit, "offset": offset}, as_dict=True)
+
+        return {
+            "data": results,
+            "pagination": {
+                "current_page": page,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "limit": limit
+            }
+        }
+    
+    except Exception as e:
+        frappe.log_error(f"Error in non_billed_brands: {str(e)}", "API Error")
+        frappe.throw(_("An error occurred while fetching non-billed brands."), frappe.exceptions.ValidationError)
 
 
 @frappe.whitelist()
-def non_billed_customers(sales_person_email="akramul.sales@excelbd.com", interval_days=30):
-    
+def non_billed_customers(sales_person_email, interval_days=30, page=1, limit=10):
     """
-    Fetch customers assigned to a sales person who haven't been billed within the last given days.
+    Fetch customers that have not been billed within a given interval by a sales person.
+    Supports pagination.
+    """
+    try:
+        if not sales_person_email:
+            frappe.throw(_("Sales Person Email is required"), frappe.exceptions.ValidationError)
 
-    :param sales_person_email: Email of the sales person (linked via excel_sales_person_email in Customer)
-    :param interval_days: Number of days to check for recent invoices (default is 30 days)
-    :return: List of dicts with customer, customer_name, last_invoice_date, and sales_person
-    """
-    interval_days = cint(interval_days)
-    query = """
-        SELECT 
-            cu.name AS customer, 
-            cu.customer_name AS customer_name, 
-            (
-                SELECT MAX(si.posting_date) 
-                FROM `tabSales Invoice` AS si 
-                WHERE si.customer = cu.name 
+        # Validate input parameters
+        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
+        page = int(page) if str(page).isdigit() else 1
+        limit = int(limit) if str(limit).isdigit() else 10
+        offset = (page - 1) * limit
+
+        # Date filter
+        start_date = add_days(nowdate(), -interval_days)
+
+        # Query to count total records for pagination
+        count_query = """
+            SELECT COUNT(*)
+            FROM `tabCustomer` AS cu
+            WHERE EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(sales_person_email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                )
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si
+                WHERE si.customer = cu.name
                 AND si.docstatus = 1
                 AND si.name LIKE '%%SINV%%'
-            ) AS last_invoice_date,
-            sp.name AS sales_person
-        FROM `tabCustomer` AS cu
-        LEFT JOIN `tabSales Person` AS sp 
-            ON cu.excel_sales_person_email = sp.excel_sales_person_email
-        WHERE cu.excel_sales_person_email = %(sales_person_email)s
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM `tabSales Invoice` AS si
-            WHERE si.customer = cu.name
-            AND si.docstatus = 1
-            AND si.name LIKE '%%SINV%%'
-            AND si.posting_date >= DATE_SUB(CURDATE(), INTERVAL %(interval_days)s DAY)
-        )
-    """
+                AND si.posting_date >= %(start_date)s
+            )
+        """
+        total_records = frappe.db.sql(count_query, {"sales_person_email": sales_person_email, "start_date": start_date})[0][0]
+        total_pages = math.ceil(total_records / limit)
 
-    data = frappe.db.sql(
-        query, 
-        {"sales_person_email": sales_person_email, "interval_days": interval_days}, 
-        as_dict=True
-    )
+        # Main Query with Pagination
+        query = """
+            SELECT 
+                cu.name AS customer, 
+                cu.customer_name AS customer_name, 
+                (
+                    SELECT MAX(si.posting_date) 
+                    FROM `tabSales Invoice` AS si 
+                    WHERE si.customer = cu.name 
+                    AND si.docstatus = 1
+                    AND si.name LIKE '%%SINV%%'
+                    AND EXISTS (
+                        SELECT 1 
+                        FROM `tabUser Permission` up 
+                        WHERE up.user = %(sales_person_email)s
+                        AND (
+                            (up.allow = "Customer" AND si.customer = up.for_value) OR
+                            (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                            (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                            (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                        )
+                    )
+                ) AS last_invoice_date,
+                sp.name AS sales_person    
+            FROM `tabCustomer` AS cu
+            LEFT JOIN `tabSales Person` AS sp 
+                ON cu.excel_sales_person_email = sp.excel_sales_person_email
+            WHERE EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(sales_person_email)s
+                AND (
+                    (up.allow = "Customer" AND cu.name = up.for_value) OR
+                    (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                    (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                    (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                )
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si
+                WHERE si.customer = cu.name
+                AND si.docstatus = 1
+                AND si.name LIKE '%%SINV%%'
+                AND si.posting_date >= %(start_date)s
+            )
+            ORDER BY last_invoice_date DESC
+            LIMIT %(limit)s OFFSET %(offset)s
+        """
+        results = frappe.db.sql(query, {"sales_person_email": sales_person_email, "start_date": start_date, "limit": limit, "offset": offset}, as_dict=True)
 
-    return data
+        return {
+            "data": results,
+            "pagination": {
+                "current_page": page,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "limit": limit
+            }
+        }
+    
+    except Exception as e:
+        frappe.log_error(f"Error in non_billed_customers: {str(e)}", "API Error")
+        frappe.throw(_("An error occurred while fetching non-billed customers."), frappe.exceptions.ValidationError)
