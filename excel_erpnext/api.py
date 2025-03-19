@@ -461,6 +461,8 @@ def get_cheque_in_hand(user_email=None, start_date=today(), end_date=today()):
         }
 
         # Add user_email to parameters if provided
+        if not user_email:
+            user_email = frappe.session.user
         if user_email:
             params["user_email"] = user_email
 
@@ -586,7 +588,7 @@ def get_cheque_collection(user_email=None, start_date=today(), end_date=today())
     try:
         # Validate sales_person_email parameter
         if not user_email:
-            frappe.throw("User Email is required")
+            user_email = frappe.session.user
 
         query = """
             WITH
@@ -707,8 +709,6 @@ def get_cheque_collection(user_email=None, start_date=today(), end_date=today())
             "data": data,
             "total_count": len(data)
         }
-        
-        return data
 
     except frappe.ValidationError as e:
         # Log and handle validation error
@@ -804,62 +804,54 @@ def get_stock_reconciliation(customer=None, start_date=today(), end_date=today()
 from frappe import _
 from frappe.utils import nowdate, add_days
 
-@frappe.whitelist()
-def monthly_sales_by_sales_person(user_email, interval_days=30):
-    try:
-        # Validate user_email parameter
-        if not user_email:
-            frappe.throw(_("User Email is required"), frappe.exceptions.ValidationError)
-        
-        # Validate interval_days and set default if invalid
-        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
 
-        # Date filter calculation
-        start_date = add_days(nowdate(), -interval_days)
-        end_date = nowdate()
-        # SQL Query for fetching sales data
+
+
+
+
+
+
+@frappe.whitelist()
+def non_billed_customers(user_email, interval_days=1):
+    """
+    Fetch customers that have not been billed within a given interval by a sales person.
+    Supports pagination.
+    """
+    if not user_email:
+        user_email = frappe.session.user
+
+        # Validate input parameters
+        
+
+        # Date filter
+        interval_days = add_days(nowdate(), - interval_days)
+
+        # Main Query with Pagination
         query = """
-            WITH
-            user_permissions AS (
-                SELECT
-                    allow,
-                    for_value
-                FROM
-                    `tabUser Permission`
-                WHERE
-                    user = %(user_email)s
+            WITH user_permissions AS (
+                SELECT allow, for_value
+                FROM `tabUser Permission`
+                WHERE user = %(user_email)s
             ),
             allowed_customers AS (
-                SELECT
-                    for_value AS customer_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer'
+                SELECT for_value AS customer_name
+                FROM user_permissions
+                WHERE allow = 'Customer'
             ),
             allowed_customer_groups AS (
-                SELECT
-                    for_value AS customer_group
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer Group'
+                SELECT for_value AS customer_group
+                FROM user_permissions
+                WHERE allow = 'Customer Group'
             ),
             allowed_sales_persons AS (
-                SELECT
-                    for_value AS sales_person_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Sales Person'
+                SELECT for_value AS sales_person_name
+                FROM user_permissions
+                WHERE allow = 'Sales Person'
             ),
             allowed_territories AS (
-                SELECT
-                    for_value AS territory
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Territory'
+                SELECT for_value AS territory
+                FROM user_permissions
+                WHERE allow = 'Territory'
             ),
             permission_flags AS (
                 SELECT
@@ -868,60 +860,104 @@ def monthly_sales_by_sales_person(user_email, interval_days=30):
                     (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
                     (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
             )
-            SELECT
-                cu.excel_sales_person_email AS sales_person,
-                DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 16 DAY), '%Y-%m-%d') AS sales_start_date,
-                DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS sales_end_date,
-                SUM(si.net_total) AS total_sales,
-                si.name
-            FROM
-                `tabSales Invoice` AS si
-            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
+            SELECT 
+                cu.name AS customer, 
+                cu.customer_name AS customer_name, 
+                (
+                    SELECT MAX(si.posting_date) 
+                    FROM `tabSales Invoice` AS si 
+                    WHERE si.customer = cu.name 
+                    AND si.docstatus = 1
+                    AND si.name LIKE '%SINV%'
+                    AND EXISTS (
+                        SELECT 1 
+                        FROM `tabUser Permission` up 
+                        WHERE up.user = 'mhemraz7726@gmail.com'
+                        AND (
+                            (up.allow = "Customer" AND si.customer = up.for_value) OR
+                            (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                            (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                            (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                        )
+                    )
+                ) AS last_invoice_date,
+                sp.name AS sales_person    
+            FROM `tabCustomer` AS cu
+            LEFT JOIN `tabSales Person` AS sp 
+                ON cu.excel_sales_person_email = sp.excel_sales_person_email
             JOIN permission_flags pf
-            WHERE
-                si.docstatus = 1
-                AND si.posting_date >= %(start_date)s  -- Last 16 days including today
-                AND si.posting_date <= %(end_date)s
+            WHERE EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = 'mhemraz7726@gmail.com'
                 AND (
                     -- Case 1: Only Territory Permission
-                    (pf.has_territory = TRUE AND pf.has_customer = FALSE AND pf.has_group = FALSE 
-                    AND pf.has_sales_person = FALSE AND cu.territory IN (SELECT territory FROM allowed_territories))
+                    (
+                        pf.has_territory = TRUE
+                        AND pf.has_customer = FALSE
+                        AND pf.has_group = FALSE
+                        AND pf.has_sales_person = FALSE
+                        AND cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
 
-                    -- Case 2: Customer Permission WITH optional Territory
-                    OR (pf.has_customer = TRUE AND cu.name IN (SELECT customer_name FROM allowed_customers)
-                    AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
+                    -- Case 2: Customer Permission WITH optional territory
+                    OR (
+                        pf.has_customer = TRUE
+                        AND cu.name IN (SELECT customer_name FROM allowed_customers)
+                        AND (
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
 
-                    -- Case 3: Customer Group WITH optional Territory
-                    OR (pf.has_group = TRUE AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
-                    AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
+                    -- Case 3: Customer Group WITH optional territory
+                    OR (
+                        pf.has_group = TRUE
+                        AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                        AND (
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
 
-                    -- Case 4: Sales Person WITH optional Territory
-                    OR (pf.has_sales_person = TRUE AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons)
-                    AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
+                    -- Case 4: Sales Person WITH optional territory
+                    OR (
+                        pf.has_sales_person = TRUE
+                        AND sp.name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                        AND (
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
                 )
-            GROUP BY
-                cu.excel_sales_person_email
-            ORDER BY
-                total_sales DESC
-            LIMIT 200;
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si
+                WHERE si.customer = cu.name
+                AND si.docstatus = 1
+                AND si.name LIKE '%SINV%'
+                AND si.posting_date >= %(start_date)s
+            );
         """
+        return frappe.db.sql(query, {"user_email": user_email, "start_date": interval_days}, as_dict=True)
 
-        # Execute query with dynamic parameters
-        results = frappe.db.sql(query, {"user_email": user_email, "start_date": start_date, "end_date": end_date}, as_dict=True)
+        
 
-        return results
+   
 
-    except Exception as e:
-        # Log error if something goes wrong
-        frappe.log_error(f"Error in monthly_sales_by_sales_person: {str(e)}", "API Error")
-        frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
+
+
+
+
+
+
+
+
 
 
 
 
 
 @frappe.whitelist()
-def non_billed_brands(user_email, interval_days=30):
+def non_billed_brands(user_email=None, interval_days=10):
     """
     Fetch brands that have not been billed within a given interval by a sales person.
     Supports pagination.
@@ -929,57 +965,40 @@ def non_billed_brands(user_email, interval_days=30):
     try:
         # Validate sales_person_email parameter
         if not user_email:
-            frappe.throw(_("Sales Person Email is required"), frappe.exceptions.ValidationError)
-
-        # Validate interval_days and set default if invalid
-        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
-
-        # Date filter
+            user_email = frappe.session.user
+        
+        # Parse interval_days to ensure it's an integer
+        interval_days = int(interval_days)
+        
+        # Calculate the start date based on the interval_days
         start_date = add_days(nowdate(), -interval_days)
 
         # SQL Query for fetching non-billed brands
         query = """
-            WITH
-            user_permissions AS (
-                SELECT
-                    allow,
-                    for_value
-                FROM
-                    `tabUser Permission`
-                WHERE
-                    user = %(user_email)s
+            WITH user_permissions AS (
+                SELECT allow, for_value
+                FROM `tabUser Permission`
+                WHERE user = %(user_email)s
             ),
             allowed_customers AS (
-                SELECT
-                    for_value AS customer_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer'
+                SELECT for_value AS customer_name
+                FROM user_permissions
+                WHERE allow = 'Customer'
             ),
             allowed_customer_groups AS (
-                SELECT
-                    for_value AS customer_group
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer Group'
+                SELECT for_value AS customer_group
+                FROM user_permissions
+                WHERE allow = 'Customer Group'
             ),
             allowed_sales_persons AS (
-                SELECT
-                    for_value AS sales_person_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Sales Person'
+                SELECT for_value AS sales_person_name
+                FROM user_permissions
+                WHERE allow = 'Sales Person'
             ),
             allowed_territories AS (
-                SELECT
-                    for_value AS territory
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Territory'
+                SELECT for_value AS territory
+                FROM user_permissions
+                WHERE allow = 'Territory'
             ),
             permission_flags AS (
                 SELECT
@@ -988,303 +1007,333 @@ def non_billed_brands(user_email, interval_days=30):
                     (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
                     (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
             )
-            SELECT
+            SELECT 
                 sii.brand,
                 MAX(si.posting_date) AS last_invoice_date,
                 sp.name AS sales_person
-            FROM
-                `tabSales Invoice` AS si
-            LEFT JOIN `tabSales Invoice Item` AS sii ON si.name = sii.parent
-            LEFT JOIN `tabCustomer` AS cu ON si.customer = cu.name
-            LEFT JOIN `tabSales Person` AS sp ON cu.excel_sales_person_email = sp.excel_sales_person_email
+            FROM `tabSales Invoice` AS si
+            LEFT JOIN `tabSales Invoice Item` AS sii 
+                ON si.name = sii.parent
+            LEFT JOIN `tabCustomer` AS cu 
+                ON si.customer = cu.name
+            LEFT JOIN `tabSales Person` AS sp 
+                ON cu.excel_sales_person_email = sp.excel_sales_person_email
             JOIN permission_flags pf
-            WHERE
-                si.docstatus = 1
-                AND si.name LIKE '%SINV%'
-                AND NOT EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        `tabSales Invoice` AS si_check
-                    WHERE
-                        si_check.customer = si.customer
-                        AND si_check.docstatus = 1
-                        AND si_check.name LIKE '%SINV%'
-                        AND si_check.posting_date >= %(start_date)s
-                )
-                AND EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        `tabUser Permission` up
-                    WHERE
-                        up.user = %(user_email)s
+            WHERE si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM `tabSales Invoice` AS si_check
+                WHERE si_check.customer = si.customer
+                AND si_check.docstatus = 1
+                AND si_check.name LIKE '%%SINV%%'
+                AND si_check.posting_date >= %(start_date)s
+            )
+            AND EXISTS (
+                SELECT 1 
+                FROM `tabUser Permission` up 
+                WHERE up.user = %(user_email)s
+                AND (
+                    (
+                        pf.has_territory = TRUE
+                        AND pf.has_customer = FALSE
+                        AND pf.has_group = FALSE
+                        AND pf.has_sales_person = FALSE
+                        AND cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                    OR (
+                        pf.has_customer = TRUE
+                        AND cu.name IN (SELECT customer_name FROM allowed_customers)
                         AND (
-                            -- Case 1: Only Territory Permission
-                            (pf.has_territory = TRUE AND pf.has_customer = FALSE AND pf.has_group = FALSE 
-                            AND pf.has_sales_person = FALSE AND cu.territory IN (SELECT territory FROM allowed_territories))
-
-                            -- Case 2: Customer Permission WITH optional territory
-                            OR (pf.has_customer = TRUE AND cu.name IN (SELECT customer_name FROM allowed_customers)
-                            AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
-
-                            -- Case 3: Customer Group WITH optional territory
-                            OR (pf.has_group = TRUE AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
-                            AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
-
-                            -- Case 4: Sales Person WITH optional territory
-                            OR (pf.has_sales_person = TRUE AND sp.name IN (SELECT sales_person_name FROM allowed_sales_persons)
-                            AND (pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)))
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
                         )
+                    )
+                    OR (
+                        pf.has_group = TRUE
+                        AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                        AND (
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
+                    OR (
+                        pf.has_sales_person = TRUE
+                        AND sp.name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                        AND (
+                            pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
                 )
-            GROUP BY
-                sii.brand,
-                sp.name
-            ORDER BY
-                last_invoice_date DESC;
-            LIMIT 200
+            )
+            GROUP BY sii.brand, sp.name
+            ORDER BY last_invoice_date DESC;
+        """
+
+        # Execute the query with dynamic parameters
+        results = frappe.db.sql(query, {'user_email': user_email, 'start_date': start_date}, as_dict=True)
+
+        # Return the results
+        frappe.response['message'] = 'success'
+        return results
+
+    except Exception as e:
+        # Log the error with more details
+        error_message = f"Error in non_billed_brands: {str(e)}"
+        frappe.log_error(error_message, "API Error")
+        frappe.throw(_(f"An error occurred while fetching non-billed brands: {str(e)}"), frappe.exceptions.ValidationError)
+        
+        
+        
+        
+        
+@frappe.whitelist()
+def non_billed_customers(user_email=None, interval_days=30):
+    """
+    Fetch customers that have not been billed within a given interval by a sales person.
+    Supports pagination.
+    """
+    # Set default user if not provided
+    if not user_email:
+        user_email = frappe.session.user
+    
+    # Validate interval_days is a positive integer
+    try:
+        interval_days = int(interval_days)
+        if interval_days < 1:
+            interval_days = 30
+    except (ValueError, TypeError):
+        interval_days = 30
+    
+    # Calculate the start date for the interval
+    start_date = frappe.utils.add_days(frappe.utils.nowdate(), -interval_days)
+    
+    # Main Query with Pagination
+    query = """
+        WITH user_permissions AS (
+            SELECT allow, for_value
+            FROM `tabUser Permission`
+            WHERE user = %s
+        ),
+        allowed_customers AS (
+            SELECT for_value AS customer_name
+            FROM user_permissions
+            WHERE allow = 'Customer'
+        ),
+        allowed_customer_groups AS (
+            SELECT for_value AS customer_group
+            FROM user_permissions
+            WHERE allow = 'Customer Group'
+        ),
+        allowed_sales_persons AS (
+            SELECT for_value AS sales_person_name
+            FROM user_permissions
+            WHERE allow = 'Sales Person'
+        ),
+        allowed_territories AS (
+            SELECT for_value AS territory
+            FROM user_permissions
+            WHERE allow = 'Territory'
+        ),
+        permission_flags AS (
+            SELECT
+                (SELECT COUNT(*) FROM allowed_customers) > 0 AS has_customer,
+                (SELECT COUNT(*) FROM allowed_customer_groups) > 0 AS has_group,
+                (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
+                (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
+        )
+        SELECT 
+            cu.name AS customer, 
+            cu.customer_name AS customer_name, 
+            (
+                SELECT MAX(si.posting_date) 
+                FROM `tabSales Invoice` AS si 
+                WHERE si.customer = cu.name 
+                AND si.docstatus = 1
+                AND si.name LIKE '%%SINV%%'
+                AND EXISTS (
+                    SELECT 1 
+                    FROM `tabUser Permission` up 
+                    WHERE up.user = %s
+                    AND (
+                        (up.allow = "Customer" AND si.customer = up.for_value) OR
+                        (up.allow = "Customer Group" AND cu.customer_group = up.for_value) OR
+                        (up.allow = "Territory" AND cu.territory = up.for_value) OR
+                        (up.allow = "Sales Person" AND cu.excel_sales_person_email = up.for_value)
+                    )
+                )
+            ) AS last_invoice_date,
+            sp.name AS sales_person    
+        FROM `tabCustomer` AS cu
+        LEFT JOIN `tabSales Person` AS sp 
+            ON cu.excel_sales_person_email = sp.excel_sales_person_email
+        JOIN permission_flags pf
+        WHERE EXISTS (
+            SELECT 1 
+            FROM `tabUser Permission` up 
+            WHERE up.user = %s
+            AND (
+                -- Case 1: Only Territory Permission
+                (
+                    pf.has_territory = TRUE
+                    AND pf.has_customer = FALSE
+                    AND pf.has_group = FALSE
+                    AND pf.has_sales_person = FALSE
+                    AND cu.territory IN (SELECT territory FROM allowed_territories)
+                )
+
+                -- Case 2: Customer Permission WITH optional territory
+                OR (
+                    pf.has_customer = TRUE
+                    AND cu.name IN (SELECT customer_name FROM allowed_customers)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+
+                -- Case 3: Customer Group WITH optional territory
+                OR (
+                    pf.has_group = TRUE
+                    AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+
+                -- Case 4: Sales Person WITH optional territory
+                OR (
+                    pf.has_sales_person = TRUE
+                    AND sp.name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+            )
+        )
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM `tabSales Invoice` AS si
+            WHERE si.customer = cu.name
+            AND si.docstatus = 1
+            AND si.name LIKE '%%SINV%%'
+            AND si.posting_date >= %s
+        );
+    """
+    
+    # Use positional parameters instead of named parameters
+    return frappe.db.sql(query, (user_email, user_email, user_email, start_date), as_dict=True)
+
+
+
+
+
+
+@frappe.whitelist()
+def monthly_sales_by_sales_person(user_email=None, interval_days=30):
+    try:
+        # Validate user_email parameter
+        if not user_email:
+            user_email = frappe.session.user
+            
+        # Validate interval_days
+        try:
+            interval_days = int(interval_days)
+            if interval_days < 1:
+                interval_days = 30
+        except (ValueError, TypeError):
+            interval_days = 30
+
+        # Date filter calculation
+        start_date = frappe.utils.add_days(frappe.utils.nowdate(), -interval_days)
+       
+        # SQL Query for fetching sales data
+        query = """
+        WITH user_permissions AS (
+            SELECT allow, for_value
+            FROM `tabUser Permission`
+            WHERE user = %s
+        ),
+        allowed_customers AS (
+            SELECT for_value AS customer_name
+            FROM user_permissions
+            WHERE allow = 'Customer'
+        ),
+        allowed_customer_groups AS (
+            SELECT for_value AS customer_group
+            FROM user_permissions
+            WHERE allow = 'Customer Group'
+        ),
+        allowed_sales_persons AS (
+            SELECT for_value AS sales_person_name
+            FROM user_permissions
+            WHERE allow = 'Sales Person'
+        ),
+        allowed_territories AS (
+            SELECT for_value AS territory
+            FROM user_permissions
+            WHERE allow = 'Territory'
+        ),
+        permission_flags AS (
+            SELECT
+                (SELECT COUNT(*) FROM allowed_customers) > 0 AS has_customer,
+                (SELECT COUNT(*) FROM allowed_customer_groups) > 0 AS has_group,
+                (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
+                (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
+        )
+        SELECT 
+            cu.excel_sales_person_email AS sales_person,
+            %s AS sales_start_date,
+            CURDATE() AS sales_end_date,
+            sum(si.net_total) AS total_sales,
+            si.name
+            
+        FROM `tabSales Invoice` AS si
+        LEFT JOIN `tabCustomer` AS cu 
+            ON si.customer = cu.name
+        JOIN permission_flags pf
+        WHERE 
+            si.docstatus = 1
+            AND si.posting_date >= %s
+            AND si.posting_date <= CURDATE()
+            AND (
+                (
+                    pf.has_territory = TRUE
+                    AND pf.has_customer = FALSE
+                    AND pf.has_group = FALSE
+                    AND pf.has_sales_person = FALSE
+                    AND cu.territory IN (SELECT territory FROM allowed_territories)
+                )
+                OR (
+                    pf.has_customer = TRUE
+                    AND cu.name IN (SELECT customer_name FROM allowed_customers)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+                OR (
+                    pf.has_group = TRUE
+                    AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+                OR (
+                    pf.has_sales_person = TRUE
+                    AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+            )
+        GROUP BY cu.excel_sales_person_email
+        ORDER BY total_sales DESC;
         """
 
         # Execute query with dynamic parameters
-        results = frappe.db.sql(query, {"user_email": user_email, "start_date": start_date}, as_dict=True)
+        # Make sure the parameters match the order of %s in the query
+        results = frappe.db.sql(query, (user_email, start_date, start_date), as_dict=True)
 
         return results
 
     except Exception as e:
         # Log error if something goes wrong
-        frappe.log_error(f"Error in non_billed_brands: {str(e)}", "API Error")
-        frappe.throw(_("An error occurred while fetching non-billed brands."), frappe.exceptions.ValidationError)
-
-
-@frappe.whitelist()
-def non_billed_customers(user_email, interval_days=30):
-    """
-    Fetch customers that have not been billed within a given interval by a sales person.
-    Supports pagination.
-    """
-    try:
-        if not user_email:
-            frappe.throw(_("User Email is required"), frappe.exceptions.ValidationError)
-
-        # Validate input parameters
-        interval_days = int(interval_days) if str(interval_days).isdigit() else 30
-
-        # Date filter
-        start_date = add_days(nowdate(), -interval_days)
-
-        # Main Query with Pagination
-        query = """
-            WITH
-                user_permissions AS (
-                    SELECT
-                        allow,
-                        for_value
-                    FROM
-                        `tabUser Permission`
-                    WHERE
-                        user = %(user_email)s
-                ),
-                allowed_customers AS (
-                    SELECT
-                        for_value AS customer_name
-                    FROM
-                        user_permissions
-                    WHERE
-                        allow = 'Customer'
-                ),
-                allowed_customer_groups AS (
-                    SELECT
-                        for_value AS customer_group
-                    FROM
-                        user_permissions
-                    WHERE
-                        allow = 'Customer Group'
-                ),
-                allowed_sales_persons AS (
-                    SELECT
-                        for_value AS sales_person_name
-                    FROM
-                        user_permissions
-                    WHERE
-                        allow = 'Sales Person'
-                ),
-                allowed_territories AS (
-                    SELECT
-                        for_value AS territory
-                    FROM
-                        user_permissions
-                    WHERE
-                        allow = 'Territory'
-                ),
-                permission_flags AS (
-                    SELECT
-                        (
-                            SELECT
-                                COUNT(*)
-                            FROM
-                                allowed_customers
-                        ) > 0 AS has_customer,
-                        (
-                            SELECT
-                                COUNT(*)
-                            FROM
-                                allowed_customer_groups
-                        ) > 0 AS has_group,
-                        (
-                            SELECT
-                                COUNT(*)
-                            FROM
-                                allowed_sales_persons
-                        ) > 0 AS has_sales_person,
-                        (
-                            SELECT
-                                COUNT(*)
-                            FROM
-                                allowed_territories
-                        ) > 0 AS has_territory
-                )
-            SELECT
-                cu.name AS customer,
-                cu.customer_name AS customer_name,
-                (
-                    SELECT
-                        MAX(si.posting_date)
-                    FROM
-                        `tabSales Invoice` AS si
-                    WHERE
-                        si.customer = cu.name
-                        AND si.docstatus = 1
-                        AND si.name LIKE '%SINV%'
-                        AND EXISTS (
-                            SELECT
-                                1
-                            FROM
-                                `tabUser Permission` up
-                            WHERE
-                                up.user = %(user_email)s
-                                AND (
-                                    (
-                                        up.allow = "Customer"
-                                        AND si.customer = up.for_value
-                                    )
-                                    OR (
-                                        up.allow = "Customer Group"
-                                        AND cu.customer_group = up.for_value
-                                    )
-                                    OR (
-                                        up.allow = "Territory"
-                                        AND cu.territory = up.for_value
-                                    )
-                                    OR (
-                                        up.allow = "Sales Person"
-                                        AND cu.excel_sales_person_email = up.for_value
-                                    )
-                                )
-                        )
-                ) AS last_invoice_date,
-                sp.name AS sales_person
-            FROM
-                `tabCustomer` AS cu
-                LEFT JOIN `tabSales Person` AS sp ON cu.excel_sales_person_email = sp.excel_sales_person_email
-                JOIN permission_flags pf
-            WHERE
-                EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        `tabUser Permission` up
-                    WHERE
-                        up.user = %(user_email)s
-                        AND (
-                            -- Case 1: Only Territory Permission
-                            (
-                                pf.has_territory = TRUE
-                                AND pf.has_customer = FALSE
-                                AND pf.has_group = FALSE
-                                AND pf.has_sales_person = FALSE
-                                AND cu.territory IN (
-                                    SELECT
-                                        territory
-                                    FROM
-                                        allowed_territories
-                                )
-                            )
-                            -- Case 2: Customer Permission WITH optional territory
-                            OR (
-                                pf.has_customer = TRUE
-                                AND cu.name IN (
-                                    SELECT
-                                        customer_name
-                                    FROM
-                                        allowed_customers
-                                )
-                                AND (
-                                    pf.has_territory = FALSE
-                                    OR cu.territory IN (
-                                        SELECT
-                                            territory
-                                        FROM
-                                            allowed_territories
-                                    )
-                                )
-                            )
-                            -- Case 3: Customer Group WITH optional territory
-                            OR (
-                                pf.has_group = TRUE
-                                AND cu.customer_group IN (
-                                    SELECT
-                                        customer_group
-                                    FROM
-                                        allowed_customer_groups
-                                )
-                                AND (
-                                    pf.has_territory = FALSE
-                                    OR cu.territory IN (
-                                        SELECT
-                                            territory
-                                        FROM
-                                            allowed_territories
-                                    )
-                                )
-                            )
-                            -- Case 4: Sales Person WITH optional territory
-                            OR (
-                                pf.has_sales_person = TRUE
-                                AND sp.name IN (
-                                    SELECT
-                                        sales_person_name
-                                    FROM
-                                        allowed_sales_persons
-                                )
-                                AND (
-                                    pf.has_territory = FALSE
-                                    OR cu.territory IN (
-                                        SELECT
-                                            territory
-                                        FROM
-                                            allowed_territories
-                                    )
-                                )
-                            )
-                        )
-                )
-                AND NOT EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        `tabSales Invoice` AS si
-                    WHERE
-                        si.customer = cu.name
-                        AND si.docstatus = 1
-                        AND si.name LIKE '%SINV%'
-                        AND si.posting_date >= %(start_date)s
-                )
-                LIMIT 200
-        """
-        results = frappe.db.sql(query, {"user_email": user_email, "start_date": start_date}, as_dict=True)
-
-        return results
-
-    except Exception as e:
-        frappe.log_error(f"Error in non_billed_customers: {str(e)}", "API Error")
-        frappe.throw(_("An error occurred while fetching non-billed customers."), frappe.exceptions.ValidationError)
+        frappe.log_error(f"Error in monthly_sales_by_sales_person: {str(e)}", "API Error")
+        frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
