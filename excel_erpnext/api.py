@@ -554,7 +554,7 @@ def get_cheque_in_hand(user_email=None, start_date=today(), end_date=today()):
                             pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
                         )
                     )
-                );
+                )
                 LIMIT 200
         """
 
