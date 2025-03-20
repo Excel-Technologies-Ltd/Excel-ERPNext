@@ -1337,3 +1337,125 @@ def monthly_sales_by_sales_person(user_email=None, interval_days=30):
         # Log error if something goes wrong
         frappe.log_error(f"Error in monthly_sales_by_sales_person: {str(e)}", "API Error")
         frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+@frappe.whitelist()
+def yearly_sales_by_sales_person(user_email=None, interval_days=30):
+    try:
+        # Validate user_email parameter
+        if not user_email:
+            user_email = frappe.session.user
+        
+        # Validate interval_days
+        if not isinstance(interval_days, int):
+            interval_days = int(interval_days)
+      
+        # Date filter calculation
+        start_date = frappe.utils.add_days(frappe.utils.nowdate(), -interval_days)
+        
+        # SQL Query for fetching sales data
+        # Use %% to escape the % character in the DATE_FORMAT function
+        query = """
+        WITH user_permissions AS (
+            SELECT allow, for_value
+            FROM `tabUser Permission`
+            WHERE user = %s
+        ),
+        allowed_customers AS (
+            SELECT for_value AS customer_name
+            FROM user_permissions
+            WHERE allow = 'Customer'
+        ),
+        allowed_customer_groups AS (
+            SELECT for_value AS customer_group
+            FROM user_permissions
+            WHERE allow = 'Customer Group'
+        ),
+        allowed_sales_persons AS (
+            SELECT for_value AS sales_person_name
+            FROM user_permissions
+            WHERE allow = 'Sales Person'
+        ),
+        allowed_territories AS (
+            SELECT for_value AS territory
+            FROM user_permissions
+            WHERE allow = 'Territory'
+        ),
+        permission_flags AS (
+            SELECT
+                (SELECT COUNT(*) FROM allowed_customers) > 0 AS has_customer,
+                (SELECT COUNT(*) FROM allowed_customer_groups) > 0 AS has_group,
+                (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
+                (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
+        )
+        SELECT 
+            cu.excel_sales_person_email AS sales_person,
+            cu.excel_sales_person_name AS sales_person_name,
+            DATE_FORMAT(si.posting_date, '%%Y-%%m') AS sales_month,  
+            sum(si.net_total) AS total_sales
+        FROM `tabSales Invoice` AS si
+        LEFT JOIN `tabCustomer` AS cu 
+            ON si.customer = cu.name
+        JOIN permission_flags pf
+        WHERE 
+            si.docstatus = 1
+            AND si.posting_date >= %s  -- Use dynamic start_date
+            AND si.posting_date < CURDATE()
+            AND (
+                -- Case 1: Only Territory Permission
+                (
+                    pf.has_territory = TRUE
+                    AND pf.has_customer = FALSE
+                    AND pf.has_group = FALSE
+                    AND pf.has_sales_person = FALSE
+                    AND cu.territory IN (SELECT territory FROM allowed_territories)
+                )
+
+                -- Case 2: Customer Permission WITH optional Territory
+                OR (
+                    pf.has_customer = TRUE
+                    AND cu.name IN (SELECT customer_name FROM allowed_customers)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+
+                -- Case 3: Customer Group WITH optional Territory
+                OR (
+                    pf.has_group = TRUE
+                    AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+
+                -- Case 4: Sales Person WITH optional Territory
+                OR (
+                    pf.has_sales_person = TRUE
+                    AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                    AND (
+                        pf.has_territory = FALSE OR cu.territory IN (SELECT territory FROM allowed_territories)
+                    )
+                )
+            )
+        GROUP BY cu.excel_sales_person_email, sales_month
+        ORDER BY sales_month DESC, total_sales DESC;
+        """
+
+        # Execute query with dynamic parameters
+        results = frappe.db.sql(query, (user_email, start_date), as_dict=True)
+
+        return results
+
+    except Exception as e:
+        # Log error if something goes wrong
+        frappe.log_error(f"Error in yearly_sales_by_sales_person: {str(e)}", "API Error")
+        frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
