@@ -1408,7 +1408,7 @@ def yearly_sales_by_sales_person(user_email=None, interval_days=30):
         WHERE 
             si.docstatus = 1
             AND si.posting_date >= %s  -- Use dynamic start_date
-            AND si.posting_date < CURDATE()
+            AND si.posting_date <= CURDATE()
             AND (
                 -- Case 1: Only Territory Permission
                 (
