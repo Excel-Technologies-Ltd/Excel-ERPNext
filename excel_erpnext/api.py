@@ -1215,7 +1215,8 @@ def non_billed_customers(user_email=None, interval_days=30):
             AND si.docstatus = 1
             AND si.name LIKE '%%SINV%%'
             AND si.posting_date >= %s
-        );
+        )
+	 LIMIT 200;
     """
     
     # Use positional parameters instead of named parameters
