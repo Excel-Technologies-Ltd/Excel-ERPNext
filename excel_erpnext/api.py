@@ -1279,11 +1279,9 @@ def monthly_sales_by_sales_person(user_email=None, interval_days=30):
                 (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
         )
         SELECT 
-            cu.excel_sales_person_email AS sales_person,
             %s AS sales_start_date,
             CURDATE() AS sales_end_date,
-            sum(si.net_total) AS total_sales,
-            si.name
+            sum(si.net_total) AS total_sales
             
         FROM `tabSales Invoice` AS si
         LEFT JOIN `tabCustomer` AS cu 
@@ -1323,7 +1321,6 @@ def monthly_sales_by_sales_person(user_email=None, interval_days=30):
                     )
                 )
             )
-        GROUP BY cu.excel_sales_person_email
         ORDER BY total_sales DESC;
         """
 
@@ -1337,15 +1334,7 @@ def monthly_sales_by_sales_person(user_email=None, interval_days=30):
         # Log error if something goes wrong
         frappe.log_error(f"Error in monthly_sales_by_sales_person: {str(e)}", "API Error")
         frappe.throw(_("An error occurred while fetching sales data."), frappe.exceptions.ValidationError)
-        
-        
-        
-        
-        
-        
-        
-        
-        
+           
         
 @frappe.whitelist()
 def yearly_sales_by_sales_person(user_email=None, interval_days=30):
@@ -1397,8 +1386,6 @@ def yearly_sales_by_sales_person(user_email=None, interval_days=30):
                 (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
         )
         SELECT 
-            cu.excel_sales_person_email AS sales_person,
-            cu.excel_sales_person_name AS sales_person_name,
             DATE_FORMAT(si.posting_date, '%%Y-%%m') AS sales_month,  
             sum(si.net_total) AS total_sales
         FROM `tabSales Invoice` AS si
@@ -1408,7 +1395,7 @@ def yearly_sales_by_sales_person(user_email=None, interval_days=30):
         WHERE 
             si.docstatus = 1
             AND si.posting_date >= %s  -- Use dynamic start_date
-            AND si.posting_date < CURDATE()
+            AND si.posting_date <= CURDATE()
             AND (
                 -- Case 1: Only Territory Permission
                 (
@@ -1446,7 +1433,7 @@ def yearly_sales_by_sales_person(user_email=None, interval_days=30):
                     )
                 )
             )
-        GROUP BY cu.excel_sales_person_email, sales_month
+        GROUP BY sales_month
         ORDER BY sales_month DESC, total_sales DESC;
         """
 
