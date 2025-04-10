@@ -557,6 +557,7 @@ def get_cheque_in_hand(user_email=None, start_date=today(), end_date=today()):
                         )
                     )
                 )
+                ORDER BY cu.excel_sales_person_name asc
                 LIMIT 200
         """
 
@@ -698,6 +699,7 @@ def get_cheque_collection(user_email=None, start_date=today(), end_date=today())
                         )
                     )
                 )
+            ORDER BY cu.excel_sales_person_name asc
             LIMIT 200
         """
 
