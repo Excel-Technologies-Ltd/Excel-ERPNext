@@ -68,8 +68,8 @@ def send_sms_notification(doc, method, account):
     posting_time = format_time_to_ampm(doc.modified)
     # Condition: Rebate 
     if account.get('is_rebate')== "Rebate":
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}-ETL"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.-ETL"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)
         if method == "on_cancel":
@@ -77,8 +77,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Ledger Debit = Ledger Adjustment
     if account_name == '10203 - Accounts Receivable - ETL' and party_type == 'Customer' and debit_amount != 0:
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)} adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}-ETL"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(debit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.-ETL"
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
         if method == "on_cancel":
@@ -86,8 +86,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Credit Note
     if doc.voucher_type == 'Credit Note':
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount) } adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount) } adjusted to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}-ETL"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.-ETL"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message ,success_msg=False)
@@ -96,8 +96,8 @@ def send_sms_notification(doc, method, account):
         return 
     # Condition: Receive Entry = Payment Entry
     if doc.voucher_type == 'Receive Entry':
-        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}[ETL]"
-        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.[ETL]"
+        message = f"{customer_name},Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{outstanding_balance}-ETL"
+        cancel_message = f"Dear {customer_name}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(credit_amount,sms=True)}. Outstanding:Tk.{outstanding_balance}.-ETL"
         # send_sms_frappe(mobile_number, message)
         if method == "on_submit":
             send_sms_frappe(mobile_number, message,success_msg=False)

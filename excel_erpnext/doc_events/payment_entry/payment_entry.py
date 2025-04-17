@@ -41,10 +41,10 @@ def send_sms_notification(doc,method):
         posting_date = format_date_to_custom(doc.posting_date) if method == "on_submit" else format_date_to_custom_cancel(doc.modified)
         posting_time = format_time_to_ampm(doc.modified)
         if method == "on_submit":
-            message = f"{party_name},Tk.{paid_amount} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}[ETL]"
+            message = f"{party_name},Tk.{paid_amount} has been deposited/received on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}-ETL"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if method == "on_cancel" :
-            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.[ETL]"
+            message = f"Dear {party_name}, rectified the previous transaction amount Tk.{paid_amount}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.-ETL"
             send_sms_frappe(mobile_number,message,success_msg=False)
         
 def send_email_notification(doc,method):

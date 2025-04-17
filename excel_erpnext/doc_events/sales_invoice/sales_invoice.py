@@ -42,17 +42,17 @@ def send_sms_notification(doc,method):
     posting_time = format_time_to_ampm(doc.modified)
     if method == "on_submit":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"{customer}, invoice amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}[ETL]"
+            message = f"{customer}, invoice amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}-ETL"
             send_sms_frappe(mobile_number,message,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"{customer}, return invoice amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}[ETL]"
+            message = f"{customer}, return invoice amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)} generated to your ledger on {posting_date},{posting_time}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}-ETL"
             send_sms_frappe(mobile_number,message,success_msg=False)
     if method == "on_cancel":
         if doc.name.startswith(('sinv', 'SINV')):
-            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.[ETL]"
+            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.-ETL"
             send_sms_frappe(mobile_number,message ,success_msg=False)
         if doc.name.startswith(('rinv', 'RINV')):
-            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.[ETL]"
+            message = f"Dear {customer}, rectified the previous transaction amount Tk.{format_in_bangladeshi_currency(bill_amount,sms=True)}. Outstanding:Tk.{format_in_bangladeshi_currency(outstanding_balance,sms=True,is_abs=False)}.-ETL"
             send_sms_frappe(mobile_number,message ,success_msg=False)
 
         
