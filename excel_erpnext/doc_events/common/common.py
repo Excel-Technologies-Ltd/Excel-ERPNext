@@ -450,7 +450,7 @@ def generate_email_footer():
     
     <p style="padding-top: 20px; margin: 0px !important;">Sincerely,</p>
     <p style="margin: 0px !important;">Excel Technologies Ltd.</p>
-    <p style="color: #888; font-size: 12px; font-style: italic;">
+    <p style="color: #888; font-size: 13px; font-style: italic;">
         This is a system-generated email. Please do not reply, as responses to this email are not monitored.
     </p>
     """
