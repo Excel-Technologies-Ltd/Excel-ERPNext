@@ -299,7 +299,7 @@ class ReceivablePayableReport(object):
 		self.invoice_details = frappe._dict()
 		if self.party_type == "Customer":
 			si_list = frappe.db.sql("""
-				select name, due_date, po_no
+				select name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no
 				from `tabSales Invoice`
 				where posting_date <= %s
 			""",self.filters.report_date, as_dict=1)
@@ -758,6 +758,10 @@ class ReceivablePayableReport(object):
 
 		self.add_column(_('Invoiced Amount'), fieldname='invoiced')
 		self.add_column(_('Paid Amount'), fieldname='paid')
+		self.add_column(label=_('Invoice Type'), fieldname='excel_invoice_type', fieldtype='Data', width=80)
+		self.add_column(label=_('Outstanding Types'), fieldname='custom_outstanding_types', fieldtype='Data', width=80)
+		self.add_column(label=_('Handover Date'), fieldname='custom_handover_date', fieldtype='Date', width=80)
+    	
 		if self.party_type == "Customer":
 			self.add_column(_('Credit Note'), fieldname='credit_note')
 		else:

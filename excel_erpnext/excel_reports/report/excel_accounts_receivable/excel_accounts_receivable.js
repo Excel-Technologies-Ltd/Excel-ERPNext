@@ -133,6 +133,17 @@ frappe.query_reports["Excel Accounts Receivable"] = {
 			"options": "Sales Person"
 		},
 		{
+			"fieldname": "handover_date",
+			"label": __("Handover Date"),
+			"fieldtype": "DateRange",
+		},
+		{
+			"fieldname": "invoice_type",
+			"label": __("Invoice Type"),
+			"fieldtype": "Select",
+			"options": "\nRegular Sales\nIn-Progress Project\nCompleted Project",
+		},
+		{
 			"fieldname": "group_by_party",
 			"label": __("Group By Customer"),
 			"fieldtype": "Check"

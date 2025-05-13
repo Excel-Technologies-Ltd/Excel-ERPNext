@@ -283,6 +283,6 @@ scheduler_events = {
 #         ]
 #     },
 # ]
-fixtures = [  'Custom Field']
+fixtures = [  'Custom Field', 'Client Script']
 
 
