@@ -16,7 +16,7 @@ frappe.query_reports["Excel Accounts Receivable"] = {
 			"fieldname": "ageing_based_on",
 			"label": __("Ageing Based On"),
 			"fieldtype": "Select",
-			"options": 'Posting Date\nDue Date',
+			"options": 'Posting Date\nDue Date\nHandover Date',
 			"default": "Posting Date"
 		},
 		{
@@ -131,11 +131,6 @@ frappe.query_reports["Excel Accounts Receivable"] = {
 			"label": __("Sales Person"),
 			"fieldtype": "Link",
 			"options": "Sales Person"
-		},
-		{
-			"fieldname": "handover_date",
-			"label": __("Handover Date"),
-			"fieldtype": "DateRange",
 		},
 		{
 			"fieldname": "invoice_type",

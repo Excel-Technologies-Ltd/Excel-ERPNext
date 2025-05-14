@@ -297,12 +297,22 @@ class ReceivablePayableReport(object):
 
 	def get_invoice_details(self):
 		self.invoice_details = frappe._dict()
+		conditions = ["posting_date <= %s"]
+		params = [self.filters.report_date]
+
+		if self.filters.get("invoice_type"):
+			conditions.append("excel_invoice_type = %s")
+			params.append(self.filters.get("invoice_type"))
+			print("Invoice Type:", self.filters.get("invoice_type"))
+		where_clause = " AND ".join(conditions)
+		query = f"""
+			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no
+			FROM `tabSales Invoice`
+			WHERE {where_clause}
+		"""
 		if self.party_type == "Customer":
-			si_list = frappe.db.sql("""
-				select name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no
-				from `tabSales Invoice`
-				where posting_date <= %s
-			""",self.filters.report_date, as_dict=1)
+			si_list = frappe.db.sql(query, params, as_dict=1)
+			print("SI List:", si_list)
 			for d in si_list:
 				self.invoice_details.setdefault(d.name, d)
 
@@ -527,6 +537,8 @@ class ReceivablePayableReport(object):
 			entry_date = row.due_date
 		elif self.filters.ageing_based_on == "Supplier Invoice Date":
 			entry_date = row.bill_date
+		elif self.filters.ageing_based_on == "Handover Date":
+			entry_date = row.custom_handover_date
 		else:
 			entry_date = row.posting_date
 
@@ -730,7 +742,7 @@ class ReceivablePayableReport(object):
 
 	def get_columns(self):
 		self.columns = []
-		self.add_column('Posting Date', fieldtype='Date')
+		self.add_column('Posting Date', fieldtype='Date',)
 		self.add_column(label=_(self.party_type), fieldname='party',
 			fieldtype='Link', options=self.party_type, width=180)
 
