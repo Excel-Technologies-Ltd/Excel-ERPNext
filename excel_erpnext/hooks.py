@@ -284,5 +284,3 @@ scheduler_events = {
 #     },
 # ]
 fixtures = [  'Custom Field', 'Client Script']
-
-
