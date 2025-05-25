@@ -578,10 +578,130 @@ def get_cheque_in_hand(user_email=None, start_date=today(), end_date=today()):
             "details": str(e)
         }
 
+@frappe.whitelist()
+def get_date_rang_wise_users_collection(user_email=None, start_date=today(), end_date=today()):
+    try:
+        # Validate sales_person_email parameter
+        if not user_email:
+            user_email = frappe.session.user
 
+        query = """
+            WITH
+            user_permissions AS (
+                SELECT
+                    allow,
+                    for_value
+                FROM
+                    `tabUser Permission`
+                WHERE
+                    user = %(user_email)s
+            ),
+            allowed_customers AS (
+                SELECT
+                    for_value AS customer_name
+                FROM
+                    user_permissions
+                WHERE
+                    allow = 'Customer'
+            ),
+            allowed_customer_groups AS (
+                SELECT
+                    for_value AS customer_group
+                FROM
+                    user_permissions
+                WHERE
+                    allow = 'Customer Group'
+            ),
+            allowed_sales_persons AS (
+                SELECT
+                    for_value AS sales_person_name
+                FROM
+                    user_permissions
+                WHERE
+                    allow = 'Sales Person'
+            ),
+            allowed_territories AS (
+                SELECT
+                    for_value AS territory
+                FROM
+                    user_permissions
+                WHERE
+                    allow = 'Territory'
+            ),
+            permission_flags AS (
+                SELECT
+                    (SELECT COUNT(*) FROM allowed_customers) > 0 AS has_customer,
+                    (SELECT COUNT(*) FROM allowed_customer_groups) > 0 AS has_group,
+                    (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
+                    (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
+            )
+            SELECT
+                %(start_date)s as start_date,
+                %(end_date)s as end_date,
+                sum(pmnt.paid_amount) as total_collection
+            FROM
+                `tabPayment Entry` AS pmnt
+            LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
+                AND pmnt.party_type = 'Customer'
+            JOIN permission_flags pf
+            WHERE
+                pmnt.docstatus = 1
+                AND pmnt.posting_date between %(start_date)s and %(end_date)s
+                AND (
+                    -- Case 1: Only Territory Permission
+                    (
+                        pf.has_territory = TRUE
+                        AND pf.has_customer = FALSE
+                        AND pf.has_group = FALSE
+                        AND pf.has_sales_person = FALSE
+                        AND pmnt.excel_territory IN (
+                            SELECT territory FROM allowed_territories
+                        )
+                    )
+                    -- Case 2: Customer Permission WITH Territory restriction if exists
+                    OR (
+                        pf.has_customer = TRUE
+                        AND cu.name IN (SELECT customer_name FROM allowed_customers)
+                        AND (
+                            pf.has_territory = FALSE
+                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
+                    -- Case 3: Customer Group + optional Territory
+                    OR (
+                        pf.has_group = TRUE
+                        AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
+                        AND (
+                            pf.has_territory = FALSE
+                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
+                    -- Case 4: Sales Person + optional Territory
+                    OR (
+                        pf.has_sales_person = TRUE
+                        AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons)
+                        AND (
+                            pf.has_territory = FALSE
+                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
+                        )
+                    )
+                )
+            ORDER BY cu.excel_sales_person_name 
+        """
 
+        # Execute query and fetch data
+        total_result = frappe.db.sql(query, {"user_email": user_email, "start_date": start_date, "end_date": end_date}, as_dict=True)
+        return total_result
 
-
+    except frappe.ValidationError as e:
+        # Log and handle validation error
+        frappe.log_error(f"Validation Error: {str(e)}", "Cheque Collection Error")
+        frappe.throw(str(e))
+    
+    except Exception as e:
+        # Log and handle unexpected errors
+        frappe.log_error(f"Unexpected Error: {str(e)}", "Cheque Collection Error")
+        frappe.throw("An unexpected error occurred while fetching cheque collection data. Please try again later.")
 
 
 @frappe.whitelist()
