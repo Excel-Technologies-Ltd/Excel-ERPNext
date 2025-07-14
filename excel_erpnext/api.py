@@ -637,52 +637,35 @@ def get_cheque_collection(user_email=None, start_date=today(), end_date=today())
         query = """
             WITH
             user_permissions AS (
-                SELECT
-                    allow,
-                    for_value
-                FROM
-                    `tabUser Permission`
-                WHERE
-                    user = %(user_email)s
+                SELECT allow, for_value
+                FROM `tabUser Permission`
+                WHERE user = %(user_email)s
             ),
             allowed_customers AS (
-                SELECT
-                    for_value AS customer_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer'
-            ),
-            allowed_customer_groups AS (
-                SELECT
-                    for_value AS customer_group
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Customer Group'
+                SELECT for_value FROM user_permissions WHERE allow = 'Customer'
             ),
             allowed_sales_persons AS (
-                SELECT
-                    for_value AS sales_person_name
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Sales Person'
+                SELECT for_value FROM user_permissions WHERE allow = 'Sales Person'
+            ),
+            allowed_customer_groups AS (
+                SELECT for_value FROM user_permissions WHERE allow = 'Customer Group'
             ),
             allowed_territories AS (
-                SELECT
-                    for_value AS territory
-                FROM
-                    user_permissions
-                WHERE
-                    allow = 'Territory'
+                SELECT for_value FROM user_permissions WHERE allow = 'Territory'
             ),
-            permission_flags AS (
+            allowed_zones AS (
+                SELECT for_value FROM user_permissions WHERE allow = 'Zone'
+            ),
+            permission_level AS (
                 SELECT
-                    (SELECT COUNT(*) FROM allowed_customers) > 0 AS has_customer,
-                    (SELECT COUNT(*) FROM allowed_customer_groups) > 0 AS has_group,
-                    (SELECT COUNT(*) FROM allowed_sales_persons) > 0 AS has_sales_person,
-                    (SELECT COUNT(*) FROM allowed_territories) > 0 AS has_territory
+                    CASE
+                        WHEN EXISTS (SELECT 1 FROM allowed_customers) THEN 'customer'
+                        WHEN EXISTS (SELECT 1 FROM allowed_sales_persons) THEN 'sales_person'
+                        WHEN EXISTS (SELECT 1 FROM allowed_customer_groups) THEN 'customer_group'
+                        WHEN EXISTS (SELECT 1 FROM allowed_territories) THEN 'territory'
+                        WHEN EXISTS (SELECT 1 FROM allowed_zones) THEN 'zone'
+                        ELSE 'all'  -- If no permissions are found, mark as 'all'
+                    END AS level
             )
             SELECT
                 pmnt.name,
@@ -699,48 +682,18 @@ def get_cheque_collection(user_email=None, start_date=today(), end_date=today())
                 `tabPayment Entry` AS pmnt
             LEFT JOIN `tabCustomer` AS cu ON pmnt.party = cu.name
                 AND pmnt.party_type = 'Customer'
-            JOIN permission_flags pf
+            JOIN permission_level pl
             WHERE
                 pmnt.docstatus = 1
                 AND pmnt.posting_date between %(start_date)s and %(end_date)s
                 AND (
-                    -- Case 1: Only Territory Permission
-                    (
-                        pf.has_territory = TRUE
-                        AND pf.has_customer = FALSE
-                        AND pf.has_group = FALSE
-                        AND pf.has_sales_person = FALSE
-                        AND pmnt.excel_territory IN (
-                            SELECT territory FROM allowed_territories
-                        )
-                    )
-                    -- Case 2: Customer Permission WITH Territory restriction if exists
-                    OR (
-                        pf.has_customer = TRUE
-                        AND cu.name IN (SELECT customer_name FROM allowed_customers)
-                        AND (
-                            pf.has_territory = FALSE
-                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
-                        )
-                    )
-                    -- Case 3: Customer Group + optional Territory
-                    OR (
-                        pf.has_group = TRUE
-                        AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups)
-                        AND (
-                            pf.has_territory = FALSE
-                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
-                        )
-                    )
-                    -- Case 4: Sales Person + optional Territory
-                    OR (
-                        pf.has_sales_person = TRUE
-                        AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons)
-                        AND (
-                            pf.has_territory = FALSE
-                            OR pmnt.excel_territory IN (SELECT territory FROM allowed_territories)
-                        )
-                    )
+                    -- If the permission level is 'all', do not apply any filtering conditions
+                    (pl.level = 'all') 
+                    OR (pl.level = 'customer' AND cu.name IN (SELECT for_value FROM allowed_customers))
+                    OR (pl.level = 'sales_person' AND cu.excel_sales_person_name IN (SELECT for_value FROM allowed_sales_persons))
+                    OR (pl.level = 'customer_group' AND cu.customer_group IN (SELECT for_value FROM allowed_customer_groups))
+                    OR (pl.level = 'territory' AND pmnt.excel_territory IN (SELECT for_value FROM allowed_territories))
+                    OR (pl.level = 'zone' AND cu.custom_zone IN (SELECT for_value FROM allowed_zones))
                 )
             ORDER BY cu.excel_sales_person_name asc
             LIMIT 200
