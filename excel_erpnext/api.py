@@ -1181,74 +1181,78 @@ def monthly_sales_by_sales_person(user_email=None, interval_days=30):
         start_date = add_days(today(), -interval_days)
         end_date = today()
 
-        result = frappe.db.sql("""
-            WITH
-                user_permissions AS (
-                    SELECT allow, for_value
-                    FROM `tabUser Permission`
-                    WHERE user = %s
-                ),
-                allowed_customers AS (
-                    SELECT for_value AS customer_name
-                    FROM user_permissions
-                    WHERE allow = 'Customer'
-                ),
-                allowed_sales_persons AS (
-                    SELECT for_value AS sales_person_name
-                    FROM user_permissions
-                    WHERE allow = 'Sales Person'
-                ),
-                allowed_customer_groups AS (
-                    SELECT for_value AS customer_group
-                    FROM user_permissions
-                    WHERE allow = 'Customer Group'
-                ),
-                allowed_territories AS (
-                    SELECT for_value AS territory
-                    FROM user_permissions
-                    WHERE allow = 'Territory'
-                ),
-                allowed_zones AS (
-                    SELECT for_value AS zone
-                    FROM user_permissions
-                    WHERE allow = 'Zone'
-                ),
-                permission_level AS (
-                    SELECT
-                        CASE
-                            WHEN EXISTS (SELECT 1 FROM allowed_customers) THEN 'customer'
-                            WHEN EXISTS (SELECT 1 FROM allowed_sales_persons) THEN 'sales_person'
-                            WHEN EXISTS (SELECT 1 FROM allowed_customer_groups) THEN 'customer_group'
-                            WHEN EXISTS (SELECT 1 FROM allowed_territories) THEN 'territory'
-                            WHEN EXISTS (SELECT 1 FROM allowed_zones) THEN 'zone'
-                            ELSE NULL
-                        END AS level
-                )
+        query = """
+            WITH user_permissions AS (
+                SELECT allow, for_value
+                FROM `tabUser Permission`
+                WHERE user = %(user_email)s
+            ),
+            allowed_customers AS (
+                SELECT for_value AS customer_name
+                FROM user_permissions
+                WHERE allow = 'Customer'
+            ),
+            allowed_sales_persons AS (
+                SELECT for_value AS sales_person_name
+                FROM user_permissions
+                WHERE allow = 'Sales Person'
+            ),
+            allowed_customer_groups AS (
+                SELECT for_value AS customer_group
+                FROM user_permissions
+                WHERE allow = 'Customer Group'
+            ),
+            allowed_territories AS (
+                SELECT for_value AS territory
+                FROM user_permissions
+                WHERE allow = 'Territory'
+            ),
+            allowed_zones AS (
+                SELECT for_value AS zone
+                FROM user_permissions
+                WHERE allow = 'Zone'
+            ),
+            permission_level AS (
+                SELECT
+                    CASE
+                        WHEN EXISTS (SELECT 1 FROM allowed_customers) THEN 'customer'
+                        WHEN EXISTS (SELECT 1 FROM allowed_sales_persons) THEN 'sales_person'
+                        WHEN EXISTS (SELECT 1 FROM allowed_customer_groups) THEN 'customer_group'
+                        WHEN EXISTS (SELECT 1 FROM allowed_territories) THEN 'territory'
+                        WHEN EXISTS (SELECT 1 FROM allowed_zones) THEN 'zone'
+                        ELSE NULL
+                    END AS level
+            )
             SELECT 
-                %s AS sales_start_date,
-                %s AS sales_end_date,
+                %(start_date)s AS sales_start_date,
+                %(end_date)s AS sales_end_date,
                 SUM(si.net_total) AS total_sales
             FROM `tabSales Invoice` si
             LEFT JOIN `tabCustomer` cu ON si.customer = cu.name,
             permission_level pl
             WHERE 
                 si.docstatus = 1
-                AND si.posting_date BETWEEN %s AND %s
+                AND si.posting_date BETWEEN %(start_date)s AND %(end_date)s
                 AND (
                     (pl.level = 'customer' AND cu.name IN (SELECT customer_name FROM allowed_customers))
                     OR (pl.level = 'sales_person' AND cu.excel_sales_person_name IN (SELECT sales_person_name FROM allowed_sales_persons))
                     OR (pl.level = 'customer_group' AND cu.customer_group IN (SELECT customer_group FROM allowed_customer_groups))
                     OR (pl.level = 'territory' AND cu.territory IN (SELECT territory FROM allowed_territories))
                     OR (pl.level = 'zone' AND cu.custom_zone IN (SELECT zone FROM allowed_zones))
-                    OR pl.level IS NULL -- This allows all data if no permissions exist
+                    OR pl.level IS NULL
                 )
-        """, (user_email, start_date, end_date, start_date, end_date), as_dict=True)
+        """
 
-        return result[0] if result else {
-            "sales_start_date": start_date,
-            "sales_end_date": end_date,
-            "total_sales": 0.0
+        # Use named parameters for better readability
+        params = {
+            'user_email': user_email,
+            'start_date': start_date,
+            'end_date': end_date
         }
+
+        results = frappe.db.sql(query, params, as_dict=True)
+        
+        return results
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "monthly_sales_by_sales_person Error")
