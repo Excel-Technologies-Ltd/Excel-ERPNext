@@ -969,7 +969,7 @@ def non_billed_customers(user_email, interval_days=1):
                 FROM `tabSales Invoice` AS si 
                 WHERE si.customer = cu.name 
                 AND si.docstatus = 1
-                AND si.name LIKE '%SINV%'
+                AND si.name LIKE '%%SINV%%'
                 AND EXISTS (
                     SELECT 1 
                     FROM `tabUser Permission` up 
@@ -1008,9 +1008,10 @@ def non_billed_customers(user_email, interval_days=1):
             FROM `tabSales Invoice` AS si
             WHERE si.customer = cu.name
             AND si.docstatus = 1
-            AND si.name LIKE '%SINV%'
+            AND si.name LIKE '%%SINV%%'
             AND si.posting_date >= %(start_date)s
-        );
+        )
+         LIMIT 200;
     """
     return frappe.db.sql(query, {"user_email": user_email, "start_date": start_date}, as_dict=True)
 
