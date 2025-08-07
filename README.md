@@ -95,6 +95,9 @@ Most requests (~99.4%) were served under 1 second.
   - Minimal payload from the endpoint.
   - Logging/reporting limitation in `hey`.
 
+# Another Performance Report:
+
+<img width="1125" height="944" alt="image" src="https://github.com/user-attachments/assets/9f3ca1e4-e08f-4e5d-82c7-ca5bc829fa22" />
 
 
 # Individual Container Scalup Report: 
