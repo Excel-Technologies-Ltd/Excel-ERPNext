@@ -102,5 +102,6 @@ Most requests (~99.4%) were served under 1 second.
 
 # Individual Container Scalup Report: 
 
-<img width="1572" height="749" alt="image" src="https://github.com/user-attachments/assets/e932072f-b1a4-40d3-ad36-70ad2a48a351" />
+<img width="1623" height="619" alt="image" src="https://github.com/user-attachments/assets/a5f5cbbf-2076-4353-817a-908141810eb4" />
+
 
