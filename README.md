@@ -96,11 +96,12 @@ Most requests (~99.4%) were served under 1 second.
   - Logging/reporting limitation in `hey`.
 
 # Another Performance Report:
-
 <img width="1125" height="944" alt="image" src="https://github.com/user-attachments/assets/9f3ca1e4-e08f-4e5d-82c7-ca5bc829fa22" />
+
 
 
 # Individual Container Scalup Report: 
 
-<img width="1572" height="749" alt="image" src="https://github.com/user-attachments/assets/e932072f-b1a4-40d3-ad36-70ad2a48a351" />
+<img width="1623" height="619" alt="image" src="https://github.com/user-attachments/assets/a5f5cbbf-2076-4353-817a-908141810eb4" />
+
 
