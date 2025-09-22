@@ -303,16 +303,17 @@ class ReceivablePayableReport(object):
 		if self.filters.get("invoice_type"):
 			conditions.append("excel_invoice_type = %s")
 			params.append(self.filters.get("invoice_type"))
-			print("Invoice Type:", self.filters.get("invoice_type"))
+		if self.filters.get("outstanding_types"):
+			conditions.append("custom_outstanding_types = %s")
+			params.append(self.filters.get("outstanding_types"))
 		where_clause = " AND ".join(conditions)
 		query = f"""
-			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no
+			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, arc_one_so, po_no
 			FROM `tabSales Invoice`
 			WHERE {where_clause}
 		"""
 		if self.party_type == "Customer":
 			si_list = frappe.db.sql(query, params, as_dict=1)
-			print("SI List:", si_list)
 			for d in si_list:
 				self.invoice_details.setdefault(d.name, d)
 
@@ -771,6 +772,7 @@ class ReceivablePayableReport(object):
 		self.add_column(_('Invoiced Amount'), fieldname='invoiced')
 		self.add_column(_('Paid Amount'), fieldname='paid')
 		self.add_column(label=_('Invoice Type'), fieldname='excel_invoice_type', fieldtype='Data', width=80)
+		self.add_column(label=_('ArcOne SO'), fieldname='arc_one_so', fieldtype='Data', width=80)
 		self.add_column(label=_('Outstanding Types'), fieldname='custom_outstanding_types', fieldtype='Data', width=80)
 		self.add_column(label=_('Handover Date'), fieldname='custom_handover_date', fieldtype='Date', width=80)
     	

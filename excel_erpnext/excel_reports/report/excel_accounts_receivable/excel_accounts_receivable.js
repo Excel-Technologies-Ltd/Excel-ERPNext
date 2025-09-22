@@ -139,6 +139,12 @@ frappe.query_reports["Excel Accounts Receivable"] = {
 			"options": "\nRegular Sales\nIn-Progress Project\nCompleted Project",
 		},
 		{
+			"fieldname": "outstanding_types",
+			"label": __("Outstanding Types"),
+			"fieldtype": "Select",
+			"options": "\nNet Vat/Tax\nBad Debt.\nNet with Vat/Tax\nTax\nSecurity Amount",
+		},
+		{
 			"fieldname": "group_by_party",
 			"label": __("Group By Customer"),
 			"fieldtype": "Check"
