@@ -46,7 +46,7 @@ def format_error_message(error_log):
     """
     return message.strip()
 
-@frappe.whitelist()
+
 def site_not_reachable_alert():
     settings = frappe.get_doc("ArcApps Alert Settings")
     site_url = get_url()
@@ -104,7 +104,7 @@ def site_not_reachable_alert():
         }
 
 
-@frappe.whitelist()
+
 def notify_telegram_on_error(error_log_name):
     """
     Send error notification to Telegram when called
@@ -168,8 +168,7 @@ def on_error_log_insert(doc, method):
     # Run in background to avoid blocking the error logging process
     frappe.enqueue(
         notify_telegram_on_error,
-        error_log_name=doc.name,
-        queue='short'
+        error_log_name=doc.name
     )
 def site_not_reachable_alert_hook():
     """

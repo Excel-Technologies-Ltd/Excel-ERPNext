@@ -114,7 +114,7 @@ doc_events = {
 		# "on_trash": "method"
 	},
 	"Error Log":{
-		"after_insert": "excel_erpnext.telegram_notification.notify_telegram_on_error"
+		"after_insert": "excel_erpnext.telegram_notification.on_error_log_insert"
 	}
 }
 
