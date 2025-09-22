@@ -34,7 +34,12 @@
   "column_break_xycdz",
   "journal_entry_cm",
   "cm_mail_tab",
-  "mail_list"
+  "mail_list",
+  "telegram_tab",
+  "enable",
+  "bot_token",
+  "chat_id",
+  "site_name"
  ],
  "fields": [
   {
@@ -190,12 +195,38 @@
    "fieldname": "receive_journal",
    "fieldtype": "Check",
    "label": "Receive Entry (Journal)"
+  },
+  {
+   "fieldname": "telegram_tab",
+   "fieldtype": "Tab Break",
+   "label": "Telegram"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "fieldname": "bot_token",
+   "fieldtype": "Small Text",
+   "label": "bot_token"
+  },
+  {
+   "fieldname": "chat_id",
+   "fieldtype": "Data",
+   "label": "chat_id"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Small Text",
+   "label": "Site Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-06 13:40:03.844823",
+ "modified": "2025-09-22 12:12:25.600704",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "ArcApps Alert Settings",

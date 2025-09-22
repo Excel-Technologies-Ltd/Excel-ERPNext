@@ -112,6 +112,9 @@ doc_events = {
 		"on_cancel": "excel_erpnext.doc_events.journal_entry.journal_entry.send_notification",
 		# "on_cancel": "method",
 		# "on_trash": "method"
+	},
+	"Error Log":{
+		"after_insert": "excel_erpnext.telegram_notification.notify_telegram_on_error"
 	}
 }
 
@@ -119,7 +122,10 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    "hourly_long": ["excel_erpnext.schedules.purchase.process_purchase_orders"]
+    "hourly_long": ["excel_erpnext.schedules.purchase.process_purchase_orders"],
+    "cron": {
+        "*/2 * * * *": ["excel_erpnext.telegram_notification.site_not_reachable_alert_hook"]
+    }
 }
 
 # scheduler_events = {
