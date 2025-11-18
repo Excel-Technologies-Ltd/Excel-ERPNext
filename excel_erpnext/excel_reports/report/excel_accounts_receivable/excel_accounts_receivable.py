@@ -306,6 +306,9 @@ class ReceivablePayableReport(object):
 		if self.filters.get("outstanding_types"):
 			conditions.append("custom_outstanding_types = %s")
 			params.append(self.filters.get("outstanding_types"))
+		if self.filters.get("arcone_so"):
+			conditions.append("arc_one_so = %s")
+			params.append(self.filters.get("arcone_so"))		
 		where_clause = " AND ".join(conditions)
 		query = f"""
 			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, arc_one_so, po_no

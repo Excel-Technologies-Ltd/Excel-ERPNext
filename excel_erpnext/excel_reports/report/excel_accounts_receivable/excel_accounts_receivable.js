@@ -142,7 +142,12 @@ frappe.query_reports["Excel Accounts Receivable"] = {
 			"fieldname": "outstanding_types",
 			"label": __("Outstanding Types"),
 			"fieldtype": "Select",
-			"options": "\nNet Vat/Tax\nBad Debt.\nNet with Vat/Tax\nTax\nSecurity Amount",
+			"options": "\nNet \nVat/Tax\nBad Debt.\nNet with Vat/Tax\nTax\nSecurity Amount",
+		},
+		{
+			"fieldname": "arcone_so",
+			"label": __("ArcOne SO"),
+			"fieldtype": "Data",
 		},
 		{
 			"fieldname": "group_by_party",
