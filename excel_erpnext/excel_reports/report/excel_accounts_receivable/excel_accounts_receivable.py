@@ -303,15 +303,18 @@ class ReceivablePayableReport(object):
 		if self.filters.get("invoice_type"):
 			conditions.append("excel_invoice_type = %s")
 			params.append(self.filters.get("invoice_type"))
+
 		if self.filters.get("outstanding_types"):
 			conditions.append("custom_outstanding_types = %s")
 			params.append(self.filters.get("outstanding_types"))
+
 		if self.filters.get("arcone_so"):
 			conditions.append("arc_one_so = %s")
-			params.append(self.filters.get("arcone_so"))		
+			params.append(self.filters.get("arcone_so"))
+
 		where_clause = " AND ".join(conditions)
 		query = f"""
-			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, arc_one_so, po_no
+			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no, arc_one_so
 			FROM `tabSales Invoice`
 			WHERE {where_clause}
 		"""
@@ -573,8 +576,44 @@ class ReceivablePayableReport(object):
 		if index is None: index = 4
 		row['range' + str(index+1)] = row.outstanding
 
+	def get_filtered_invoices(self):
+		"""Get list of invoice names that match the custom filters"""
+		if not (self.filters.get("invoice_type") or self.filters.get("outstanding_types") or self.filters.get("arcone_so")):
+			return None  # No filters, return all
+
+		conditions = ["posting_date <= %s", "docstatus = 1"]
+		params = [self.filters.report_date]
+
+		if self.filters.get("invoice_type"):
+			conditions.append("excel_invoice_type = %s")
+			params.append(self.filters.get("invoice_type"))
+
+		if self.filters.get("outstanding_types"):
+			conditions.append("custom_outstanding_types = %s")
+			params.append(self.filters.get("outstanding_types"))
+
+		if self.filters.get("arcone_so"):
+			conditions.append("arc_one_so = %s")
+			params.append(self.filters.get("arcone_so"))
+
+		where_clause = " AND ".join(conditions)
+		query = f"SELECT name FROM `tabSales Invoice` WHERE {where_clause}"
+
+		result = frappe.db.sql(query, params, as_dict=False)
+		return [r[0] for r in result] if result else []
+
 	def get_gl_entries(self):
 		# get all the GL entries filtered by the given filters
+
+		# Get filtered invoices if custom filters are applied
+		filtered_invoices = None
+		if self.party_type == "Customer":
+			filtered_invoices = self.get_filtered_invoices()
+
+			# If filters are applied but no invoices match, return empty
+			if filtered_invoices is not None and len(filtered_invoices) == 0:
+				self.gl_entries = []
+				return
 
 		conditions, values = self.prepare_conditions()
 		order_by = self.get_order_by_condition()
@@ -592,6 +631,14 @@ class ReceivablePayableReport(object):
 		else:
 			select_fields = "debit, credit"
 
+		# Add voucher_no filter if we have filtered invoices
+		voucher_filter = ""
+		if filtered_invoices is not None:
+			placeholders = ','.join(['%s'] * len(filtered_invoices))
+			voucher_filter = f" AND (voucher_no IN ({placeholders}) OR against_voucher IN ({placeholders}))"
+			values.extend(filtered_invoices)
+			values.extend(filtered_invoices)
+
 		self.gl_entries = frappe.db.sql("""
 			select
 				name, posting_date, account, party_type, party, voucher_type, voucher_no, cost_center,
@@ -602,8 +649,8 @@ class ReceivablePayableReport(object):
 				docstatus < 2
 				and party_type=%s
 				and (party is not null and party != '')
-				{1} {2} {3}"""
-			.format(select_fields, date_condition, conditions, order_by), values, as_dict=True)
+				{1} {2} {3} {4}"""
+			.format(select_fields, date_condition, conditions, voucher_filter, order_by), values, as_dict=True)
 
 	def get_sales_invoices_or_customers_based_on_sales_person(self):
 		if self.filters.get("sales_person"):
