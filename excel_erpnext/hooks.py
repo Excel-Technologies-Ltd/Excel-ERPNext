@@ -119,6 +119,10 @@ doc_events = {
 	"Material Request": {
 		"on_update": "excel_erpnext.doc_events.material_request.material_request.on_update",
 		"on_cancel": "excel_erpnext.doc_events.material_request.material_request.on_cancel",
+	},
+	"Excel LC Pipeline": {
+		"on_submit": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_submit",
+		"on_cancel": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_cancel",
 	}
 }
 
