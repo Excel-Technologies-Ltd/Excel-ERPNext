@@ -115,6 +115,10 @@ doc_events = {
 	},
 	"Error Log":{
 		"after_insert": "excel_erpnext.telegram_notification.on_error_log_insert"
+	},
+	"Material Request": {
+		"on_update": "excel_erpnext.doc_events.material_request.material_request.on_update",
+		"on_cancel": "excel_erpnext.doc_events.material_request.material_request.on_cancel",
 	}
 }
 
