@@ -1,4 +1,4 @@
-name: Frappe Docker Build Dev ADIST & FTCL
+name: Frappe Docker Build Dev Excel ERPNext
 
 on:
   workflow_dispatch:

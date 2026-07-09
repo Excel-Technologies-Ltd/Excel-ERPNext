@@ -17,9 +17,10 @@
   "under_production",
   "column_break_0kred",
   "proposed_new_order_qty",
-  "suggested__order",
+  "backlog",
   "column_break_dzk23",
-  "fob"
+  "fob",
+  "suggested__order"
  ],
  "fields": [
   {
@@ -100,11 +101,16 @@
    "fieldname": "fob",
    "fieldtype": "Float",
    "label": "FOB"
+  },
+  {
+   "fieldname": "backlog",
+   "fieldtype": "Float",
+   "label": "Backlog"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-12 18:30:36.820931",
+ "modified": "2026-07-08 16:29:12.631131",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Excel PSI",
