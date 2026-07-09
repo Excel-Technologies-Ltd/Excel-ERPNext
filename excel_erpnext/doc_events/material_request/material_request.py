@@ -12,12 +12,31 @@ def _get_excel_psi(item_code):
     return frappe.get_doc("Excel PSI", name) if name else None
 
 
-def _warn_missing_psi(item_code):
-    frappe.msgprint(
-        _("Excel PSI not found for item <b>{0}</b> — PSI not updated.").format(item_code),
-        indicator="orange",
-        alert=True,
+def _create_excel_psi(item_code):
+    """Excel PSI is named after item_code (autoname: field:item_code), so a
+    Material Request referencing an item with no PSI yet gets one created rather
+    than silently skipping the sync."""
+    item = frappe.db.get_value(
+        "Item", item_code, ["item_name", "item_group", "brand"], as_dict=True
     )
+    if not item:
+        return None
+
+    psi = frappe.new_doc("Excel PSI")
+    psi.item_code = item_code
+    psi.item_name = item.item_name
+    psi.item_group = item.item_group
+    psi.item_brand = item.brand
+    psi.flags.ignore_permissions = True
+    psi.insert()
+    return psi
+
+
+def _get_or_create_excel_psi(item_code):
+    psi = _get_excel_psi(item_code)
+    if psi:
+        return psi
+    return _create_excel_psi(item_code)
 
 
 def _items_by_code(items):
@@ -73,9 +92,13 @@ def _approved_requested_qty(item_code):
 
 
 def _sync_psi_quantities(item_code):
-    psi = _get_excel_psi(item_code)
+    psi = _get_or_create_excel_psi(item_code)
     if not psi:
-        _warn_missing_psi(item_code)
+        frappe.msgprint(
+            _("Item <b>{0}</b> not found — Excel PSI not created.").format(item_code),
+            indicator="orange",
+            alert=True,
+        )
         return
 
     proposed_qty = _active_requested_qty(item_code)
@@ -91,6 +114,29 @@ def _sync_psi_quantities(item_code):
     psi.under_production = under_production_qty
     psi.flags.ignore_permissions = True
     psi.save()
+
+
+def validate(doc, method=None):
+    """Set each item's rate to Excel PSI's FOB price ($), copied as-is (no markup).
+    Skipped once the request was already submitted *before* this save (docstatus 1
+    on doc_before) -- rate isn't allow_on_submit, so changing it on a re-save of an
+    already-approved request would raise an "after submission" error. The save that
+    transitions a request into Approved for the first time is still covered, since
+    doc_before.docstatus is still 0 at that point (submit sets docstatus then saves)."""
+    doc_before = doc.get_doc_before_save()
+    if doc_before and doc_before.docstatus == 1:
+        return
+
+    for item in doc.items:
+        if not item.item_code:
+            continue
+
+        psi = _get_or_create_excel_psi(item.item_code)
+        if not psi:
+            continue
+
+        item.rate = flt(psi.fob)
+        item.amount = flt(item.qty) * item.rate
 
 
 def on_update(doc, method=None):

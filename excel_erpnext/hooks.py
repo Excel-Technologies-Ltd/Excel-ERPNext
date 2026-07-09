@@ -117,12 +117,16 @@ doc_events = {
 		"after_insert": "excel_erpnext.telegram_notification.on_error_log_insert"
 	},
 	"Material Request": {
+		"validate": "excel_erpnext.doc_events.material_request.material_request.validate",
 		"on_update": "excel_erpnext.doc_events.material_request.material_request.on_update",
 		"on_cancel": "excel_erpnext.doc_events.material_request.material_request.on_cancel",
 	},
 	"Excel LC Pipeline": {
+		"validate": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.validate",
+		"on_update": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_update",
 		"on_submit": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_submit",
 		"on_cancel": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_cancel",
+		"on_trash": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_trash",
 	}
 }
 
