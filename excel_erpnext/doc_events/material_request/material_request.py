@@ -117,12 +117,14 @@ def _sync_psi_quantities(item_code):
 
 
 def validate(doc, method=None):
-    """Set each item's rate to Excel PSI's FOB price ($), copied as-is (no markup).
+    """Push each Material Request item rate into Excel PSI FOB.
+
     Skipped once the request was already submitted *before* this save (docstatus 1
-    on doc_before) -- rate isn't allow_on_submit, so changing it on a re-save of an
-    already-approved request would raise an "after submission" error. The save that
-    transitions a request into Approved for the first time is still covered, since
-    doc_before.docstatus is still 0 at that point (submit sets docstatus then saves)."""
+    on doc_before) -- rate isn't allow_on_submit, so changing linked PSI on a
+    re-save of an already-submitted request is avoided. The save that transitions
+    a request into Approved for the first time is still covered, since
+    doc_before.docstatus is still 0 at that point.
+    """
     doc_before = doc.get_doc_before_save()
     if doc_before and doc_before.docstatus == 1:
         return
@@ -131,12 +133,22 @@ def validate(doc, method=None):
         if not item.item_code:
             continue
 
+        rate = flt(item.rate)
+        item.amount = flt(item.qty) * rate
+
+        if rate <= 0:
+            continue
+
         psi = _get_or_create_excel_psi(item.item_code)
         if not psi:
             continue
 
-        item.rate = flt(psi.fob)
-        item.amount = flt(item.qty) * item.rate
+        if flt(psi.fob) == rate:
+            continue
+
+        psi.fob = rate
+        psi.flags.ignore_permissions = True
+        psi.save()
 
 
 def on_update(doc, method=None):
