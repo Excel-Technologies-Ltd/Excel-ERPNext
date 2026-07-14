@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-14 17:20:38.049072",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "wo_date",
+  "total_wo_value",
+  "products_delivery_status",
+  "project_start_date",
+  "column_break_kbstu",
+  "working_progress",
+  "handover_status",
+  "project_ending_date",
+  "final_bill_submission_date",
+  "remarks",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "PS-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "wo_date",
+   "fieldtype": "Date",
+   "label": "WO Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Project Status",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "total_wo_value",
+   "fieldtype": "Data",
+   "label": "Total WO Value"
+  },
+  {
+   "fieldname": "products_delivery_status",
+   "fieldtype": "Data",
+   "label": "Products Delivery Status"
+  },
+  {
+   "fieldname": "project_start_date",
+   "fieldtype": "Date",
+   "label": "Project Start Date"
+  },
+  {
+   "fieldname": "working_progress",
+   "fieldtype": "Data",
+   "label": "Working Progress"
+  },
+  {
+   "fieldname": "handover_status",
+   "fieldtype": "Data",
+   "label": "Handover Status"
+  },
+  {
+   "fieldname": "project_ending_date",
+   "fieldtype": "Date",
+   "label": "Project Ending Date"
+  },
+  {
+   "fieldname": "final_bill_submission_date",
+   "fieldtype": "Date",
+   "label": "Final Bill Submission Date"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "column_break_kbstu",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-14 17:27:46.427260",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Project Status",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-14 17:51:27.620741",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "project",
+  "total_wo_value",
+  "total_final_bill_amount",
+  "column_break_qhub3",
+  "total_cost_amount",
+  "total_collected_amount",
+  "profitloss",
+  "margin_",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "PWP-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project Name",
+   "options": "Project"
+  },
+  {
+   "fieldname": "total_wo_value",
+   "fieldtype": "Currency",
+   "label": "Total WO Value"
+  },
+  {
+   "fieldname": "total_final_bill_amount",
+   "fieldtype": "Currency",
+   "label": "Total Final Bill Amount"
+  },
+  {
+   "fieldname": "total_cost_amount",
+   "fieldtype": "Currency",
+   "label": "Total Cost Amount"
+  },
+  {
+   "fieldname": "total_collected_amount",
+   "fieldtype": "Data",
+   "label": "Total Collected Amount"
+  },
+  {
+   "fieldname": "profitloss",
+   "fieldtype": "Data",
+   "label": "Profit/Loss"
+  },
+  {
+   "fieldname": "margin_",
+   "fieldtype": "Data",
+   "label": "Margin (%)"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Project Wise Profit",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_qhub3",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-14 17:52:50.474394",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Project Wise Profit",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

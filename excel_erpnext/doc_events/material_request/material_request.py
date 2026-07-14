@@ -91,6 +91,26 @@ def _approved_requested_qty(item_code):
     )
 
 
+def _lc_submitted_qty(item_code):
+    """Sum of qty for this item across every *submitted* Excel LC Pipeline. Once a
+    pipeline is submitted, that portion of the Approved Material Request qty has
+    already been placed into an LC and closed out into Backlog (see
+    excel_lc_pipeline.on_submit) — it must be excluded here so a later Material
+    Request save doesn't recompute Under Production back up and undo that."""
+    rows = frappe.db.sql(
+        """
+        SELECT SUM(lci.qty) AS total
+        FROM `tabExcel LC Pipeline Item` lci
+        INNER JOIN `tabExcel LC Pipeline` lc ON lc.name = lci.parent
+        WHERE lci.item_code = %(item_code)s
+          AND lc.docstatus = 1
+        """,
+        {"item_code": item_code},
+        as_dict=True,
+    )
+    return flt(rows[0].total) if rows and rows[0].total else 0.0
+
+
 def _sync_psi_quantities(item_code):
     psi = _get_or_create_excel_psi(item_code)
     if not psi:
@@ -102,7 +122,9 @@ def _sync_psi_quantities(item_code):
         return
 
     proposed_qty = _active_requested_qty(item_code)
-    under_production_qty = _approved_requested_qty(item_code)
+    under_production_qty = max(
+        0.0, _approved_requested_qty(item_code) - _lc_submitted_qty(item_code)
+    )
 
     if (
         flt(psi.proposed_new_order_qty) == proposed_qty
@@ -155,9 +177,10 @@ def on_update(doc, method=None):
     """Mirror Material Request quantities into Excel PSI. Runs on every save, not
     just workflow-state transitions, so item/qty edits made while the request stays
     in the same state are picked up too. Recomputes both proposed_new_order_qty
-    (sum of active/pending requests) and under_production (sum of Approved
-    requests) from scratch for each item touched by this save, rather than
-    adjusting by a delta, so it's self-healing instead of drift-prone. Pipeline is
+    (sum of active/pending requests) and under_production (sum of Approved requests,
+    less whatever has already been placed into a submitted Excel LC Pipeline) from
+    scratch for each item touched by this save, rather than adjusting by a delta, so
+    it's self-healing instead of drift-prone. Pipeline is
     owned by Excel LC Pipeline's on_submit/on_cancel — not touched here."""
     doc_before = doc.get_doc_before_save()
 
