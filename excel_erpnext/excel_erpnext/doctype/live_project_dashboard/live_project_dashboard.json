@@ -1,0 +1,239 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-14 11:13:51.454707",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "project_information_section",
+  "naming_series",
+  "customer_name",
+  "wo_number",
+  "wo_date",
+  "column_break_ppwhu",
+  "start_date",
+  "end_date",
+  "section_break_qewxx",
+  "total_wo_value",
+  "total_budget_cost",
+  "actual_cost",
+  "column_break_zta4x",
+  "profitloss",
+  "profit_",
+  "section_break_c1dhm",
+  "team_cost",
+  "labor_cost",
+  "sub_contractor_cost",
+  "material_cost",
+  "column_break_gotrz",
+  "others_cost",
+  "total_running_cost",
+  "remaining_budget",
+  "section_break_tlzrv",
+  "approved_iou",
+  "pending_iou",
+  "remaining_iou",
+  "column_break_hshnb",
+  "iou_voucher",
+  "pending_voucher",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "LPD-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Link",
+   "label": "Customer Name",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "wo_number",
+   "fieldtype": "Data",
+   "label": "WO Number"
+  },
+  {
+   "fieldname": "wo_date",
+   "fieldtype": "Date",
+   "label": "WO Date"
+  },
+  {
+   "fieldname": "column_break_ppwhu",
+   "fieldtype": "Column Break",
+   "label": "Financial Overview"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "section_break_qewxx",
+   "fieldtype": "Section Break",
+   "label": "Financial Overview"
+  },
+  {
+   "fieldname": "total_wo_value",
+   "fieldtype": "Currency",
+   "label": "Total WO Value"
+  },
+  {
+   "fieldname": "total_budget_cost",
+   "fieldtype": "Currency",
+   "label": "Total Budget Cost"
+  },
+  {
+   "fieldname": "actual_cost",
+   "fieldtype": "Currency",
+   "label": "Actual Cost"
+  },
+  {
+   "fieldname": "column_break_zta4x",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "profitloss",
+   "fieldtype": "Currency",
+   "label": "Profit/Loss"
+  },
+  {
+   "fieldname": "profit_",
+   "fieldtype": "Currency",
+   "label": "Profit %"
+  },
+  {
+   "fieldname": "section_break_c1dhm",
+   "fieldtype": "Section Break",
+   "label": "Cost Breakdown"
+  },
+  {
+   "fieldname": "team_cost",
+   "fieldtype": "Currency",
+   "label": "Team Cost"
+  },
+  {
+   "fieldname": "labor_cost",
+   "fieldtype": "Currency",
+   "label": "Labor Cost"
+  },
+  {
+   "fieldname": "sub_contractor_cost",
+   "fieldtype": "Currency",
+   "label": "Sub Contractor Cost"
+  },
+  {
+   "fieldname": "material_cost",
+   "fieldtype": "Currency",
+   "label": "Material Cost"
+  },
+  {
+   "fieldname": "column_break_gotrz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "others_cost",
+   "fieldtype": "Currency",
+   "label": "Others Cost"
+  },
+  {
+   "fieldname": "total_running_cost",
+   "fieldtype": "Currency",
+   "label": "Total Running Cost"
+  },
+  {
+   "fieldname": "remaining_budget",
+   "fieldtype": "Currency",
+   "label": "Remaining Budget"
+  },
+  {
+   "fieldname": "section_break_tlzrv",
+   "fieldtype": "Section Break",
+   "label": "IOU & Vouchers"
+  },
+  {
+   "fieldname": "approved_iou",
+   "fieldtype": "Currency",
+   "label": "Approved IOU"
+  },
+  {
+   "fieldname": "pending_iou",
+   "fieldtype": "Currency",
+   "label": "Pending IOU"
+  },
+  {
+   "fieldname": "remaining_iou",
+   "fieldtype": "Currency",
+   "label": "Remaining IOU"
+  },
+  {
+   "fieldname": "column_break_hshnb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Live Project Dashboard",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "iou_voucher",
+   "fieldtype": "Currency",
+   "label": "IOU Voucher"
+  },
+  {
+   "fieldname": "pending_voucher",
+   "fieldtype": "Currency",
+   "label": "Pending Voucher"
+  },
+  {
+   "fieldname": "project_information_section",
+   "fieldtype": "Section Break",
+   "label": "Project Informations"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-14 13:04:35.278986",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Live Project Dashboard",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
