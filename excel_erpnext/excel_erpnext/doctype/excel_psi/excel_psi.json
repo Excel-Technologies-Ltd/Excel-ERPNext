@@ -20,7 +20,8 @@
   "backlog",
   "column_break_dzk23",
   "fob",
-  "suggested__order"
+  "suggested__order",
+  "cancelled_lc_pipeline_qty"
  ],
  "fields": [
   {
@@ -106,6 +107,12 @@
    "fieldname": "backlog",
    "fieldtype": "Float",
    "label": "Backlog"
+  },
+  {
+   "fieldname": "cancelled_lc_pipeline_qty",
+   "fieldtype": "Float",
+   "label": "Cancelled LC Pipeline Qty",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

@@ -123,10 +123,9 @@ doc_events = {
 	},
 	"Excel LC Pipeline": {
 		"validate": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.validate",
-		"on_update": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_update",
 		"on_submit": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_submit",
+		"on_update_after_submit": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_update_after_submit",
 		"on_cancel": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_cancel",
-		"on_trash": "excel_erpnext.doc_events.excel_lc_pipeline.excel_lc_pipeline.on_trash",
 	}
 }
 
