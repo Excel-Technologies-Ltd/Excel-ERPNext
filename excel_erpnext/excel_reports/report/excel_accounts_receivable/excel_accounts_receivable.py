@@ -314,7 +314,8 @@ class ReceivablePayableReport(object):
 
 		where_clause = " AND ".join(conditions)
 		query = f"""
-			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no, arc_one_so
+			SELECT name, excel_invoice_type, custom_handover_date, due_date, custom_outstanding_types, po_no, arc_one_so,
+				excel_customer_name_for_mps_print
 			FROM `tabSales Invoice`
 			WHERE {where_clause}
 		"""
@@ -802,14 +803,22 @@ class ReceivablePayableReport(object):
 				fieldname = scrub(self.party_type) + '_name', fieldtype='Data')
 
 		if self.party_type == 'Customer':
+			self.add_column(label=_('Customer Name for MPS Print'),
+				fieldname='excel_customer_name_for_mps_print', fieldtype='Data')
+
+		if self.party_type == 'Customer':
 			self.add_column(_("Customer Contact"), fieldname='customer_primary_contact',
 				fieldtype='Link', options='Contact')
 
 		self.add_column(label=_('Cost Center'), fieldname='cost_center', fieldtype='Data')
 		self.add_column(label=_('Voucher Type'), fieldname='voucher_type', fieldtype='Data')
+		self.add_column(label=_('Invoice Type'), fieldname='excel_invoice_type', fieldtype='Data', width=80)
+		self.add_column(label=_('Outstanding Types'), fieldname='custom_outstanding_types', fieldtype='Data', width=80)
 		self.add_column(label=_('Voucher No'), fieldname='voucher_no', fieldtype='Dynamic Link',
 			options='voucher_type', width=180)
+		self.add_column(label=_('ArcOne SO'), fieldname='arc_one_so', fieldtype='Data', width=80)
 		self.add_column(label='Due Date', fieldtype='Date')
+		self.add_column(label=_('Handover Date'), fieldname='custom_handover_date', fieldtype='Date', width=80)
 
 		if self.party_type == "Supplier":
 			self.add_column(label=_('Bill No'), fieldname='bill_no', fieldtype='Data')
@@ -821,11 +830,7 @@ class ReceivablePayableReport(object):
 
 		self.add_column(_('Invoiced Amount'), fieldname='invoiced')
 		self.add_column(_('Paid Amount'), fieldname='paid')
-		self.add_column(label=_('Invoice Type'), fieldname='excel_invoice_type', fieldtype='Data', width=80)
-		self.add_column(label=_('ArcOne SO'), fieldname='arc_one_so', fieldtype='Data', width=80)
-		self.add_column(label=_('Outstanding Types'), fieldname='custom_outstanding_types', fieldtype='Data', width=80)
-		self.add_column(label=_('Handover Date'), fieldname='custom_handover_date', fieldtype='Date', width=80)
-    	
+
 		if self.party_type == "Customer":
 			self.add_column(_('Credit Note'), fieldname='credit_note')
 		else:
