@@ -39,103 +39,69 @@ def _get_or_create_excel_psi(item_code):
     return _create_excel_psi(item_code)
 
 
-def _items_by_code(items):
-    codes = set()
+def _qty_by_item(items):
+    """item_code -> total qty across a Material Request's item rows."""
+    totals = {}
     for item in items or []:
-        if item.item_code:
-            codes.add(item.item_code)
-    return codes
+        if not item.item_code:
+            continue
+        totals[item.item_code] = totals.get(item.item_code, 0.0) + flt(item.qty)
+    return totals
 
 
-def _sum_qty_where(item_code, extra_condition, extra_values=None):
-    rows = frappe.db.sql(
-        f"""
-        SELECT SUM(mri.qty) AS total
-        FROM `tabMaterial Request Item` mri
-        INNER JOIN `tabMaterial Request` mr ON mr.name = mri.parent
-        WHERE mri.item_code = %(item_code)s
-          AND mr.docstatus != 2
-          AND {extra_condition}
-        """,
-        {"item_code": item_code, **(extra_values or {})},
-        as_dict=True,
-    )
-    return flt(rows[0].total) if rows and rows[0].total else 0.0
+def _bucket(workflow_state, docstatus):
+    """Which Excel PSI qty bucket a Material Request's items fall into, given its
+    workflow state and docstatus. None means neither bucket (no state yet,
+    rejected, or cancelled)."""
+    if docstatus == 2:
+        return None
+    if workflow_state == APPROVED_STATE:
+        return "approved"
+    if workflow_state and workflow_state not in EXCLUDED_FROM_PROPOSED:
+        return "active"
+    return None
 
 
-def _active_requested_qty(item_code):
-    """Sum of qty for this item across every Material Request currently in an
-    active (pending) workflow state — i.e. not yet Approved and not Rejected.
-    Recomputed from scratch every time rather than accumulated as a delta, so it
-    can never drift out of sync — no matter what happened on earlier saves
-    (including saves made before this logic existed), this always reflects the
-    true current state."""
-    return _sum_qty_where(
-        item_code,
-        """mr.custom_workflow_state IS NOT NULL
-          AND mr.custom_workflow_state != ''
-          AND mr.custom_workflow_state NOT IN %(excluded_states)s""",
-        {"excluded_states": tuple(EXCLUDED_FROM_PROPOSED)},
-    )
+def _sync_psi_deltas(doc, doc_before):
+    """Adjust Excel PSI's proposed_new_order_qty and under_production by exactly
+    what this save changed, rather than recomputing either total from scratch.
+    A scratch recompute would stomp on contributions this Material Request never
+    owned in the first place: under_production in particular is also mutated
+    directly by Excel LC Pipeline (see excel_lc_pipeline.on_submit/on_cancel),
+    which carries part of it into Backlog outside of any qty this function can
+    see — recomputing from Material Requests alone would undo that. Applying
+    only the delta this save introduced leaves everything else untouched."""
+    old_bucket = _bucket(doc_before.custom_workflow_state, doc_before.docstatus) if doc_before else None
+    new_bucket = _bucket(doc.custom_workflow_state, doc.docstatus)
 
+    old_qty = _qty_by_item(doc_before.items) if doc_before else {}
+    new_qty = _qty_by_item(doc.items)
 
-def _approved_requested_qty(item_code):
-    """Sum of qty for this item across every Material Request currently Approved —
-    the portion that has moved from "proposed" into "under production". Same
-    recompute-from-scratch approach as _active_requested_qty, for the same reason:
-    it can't drift, regardless of history."""
-    return _sum_qty_where(
-        item_code,
-        "mr.custom_workflow_state = %(approved_state)s",
-        {"approved_state": APPROVED_STATE},
-    )
+    for item_code in set(old_qty) | set(new_qty):
+        old_active = old_qty.get(item_code, 0.0) if old_bucket == "active" else 0.0
+        new_active = new_qty.get(item_code, 0.0) if new_bucket == "active" else 0.0
+        old_approved = old_qty.get(item_code, 0.0) if old_bucket == "approved" else 0.0
+        new_approved = new_qty.get(item_code, 0.0) if new_bucket == "approved" else 0.0
 
+        proposed_delta = new_active - old_active
+        under_production_delta = new_approved - old_approved
 
-def _lc_submitted_qty(item_code):
-    """Sum of qty for this item across every *submitted* Excel LC Pipeline. Once a
-    pipeline is submitted, that portion of the Approved Material Request qty has
-    already been placed into an LC and closed out into Backlog (see
-    excel_lc_pipeline.on_submit) — it must be excluded here so a later Material
-    Request save doesn't recompute Under Production back up and undo that."""
-    rows = frappe.db.sql(
-        """
-        SELECT SUM(lci.qty) AS total
-        FROM `tabExcel LC Pipeline Item` lci
-        INNER JOIN `tabExcel LC Pipeline` lc ON lc.name = lci.parent
-        WHERE lci.item_code = %(item_code)s
-          AND lc.docstatus = 1
-        """,
-        {"item_code": item_code},
-        as_dict=True,
-    )
-    return flt(rows[0].total) if rows and rows[0].total else 0.0
+        if not proposed_delta and not under_production_delta:
+            continue
 
+        psi = _get_or_create_excel_psi(item_code)
+        if not psi:
+            frappe.msgprint(
+                _("Item <b>{0}</b> not found — Excel PSI not created.").format(item_code),
+                indicator="orange",
+                alert=True,
+            )
+            continue
 
-def _sync_psi_quantities(item_code):
-    psi = _get_or_create_excel_psi(item_code)
-    if not psi:
-        frappe.msgprint(
-            _("Item <b>{0}</b> not found — Excel PSI not created.").format(item_code),
-            indicator="orange",
-            alert=True,
-        )
-        return
-
-    proposed_qty = _active_requested_qty(item_code)
-    under_production_qty = max(
-        0.0, _approved_requested_qty(item_code) - _lc_submitted_qty(item_code)
-    )
-
-    if (
-        flt(psi.proposed_new_order_qty) == proposed_qty
-        and flt(psi.under_production) == under_production_qty
-    ):
-        return
-
-    psi.proposed_new_order_qty = proposed_qty
-    psi.under_production = under_production_qty
-    psi.flags.ignore_permissions = True
-    psi.save()
+        psi.proposed_new_order_qty = max(0.0, flt(psi.proposed_new_order_qty) + proposed_delta)
+        psi.under_production = max(0.0, flt(psi.under_production) + under_production_delta)
+        psi.flags.ignore_permissions = True
+        psi.save()
 
 
 def validate(doc, method=None):
@@ -176,23 +142,13 @@ def validate(doc, method=None):
 def on_update(doc, method=None):
     """Mirror Material Request quantities into Excel PSI. Runs on every save, not
     just workflow-state transitions, so item/qty edits made while the request stays
-    in the same state are picked up too. Recomputes both proposed_new_order_qty
-    (sum of active/pending requests) and under_production (sum of Approved requests,
-    less whatever has already been placed into a submitted Excel LC Pipeline) from
-    scratch for each item touched by this save, rather than adjusting by a delta, so
-    it's self-healing instead of drift-prone. Pipeline is
-    owned by Excel LC Pipeline's on_submit/on_cancel — not touched here."""
-    doc_before = doc.get_doc_before_save()
-
-    old_codes = _items_by_code(doc_before.items) if doc_before else set()
-    new_codes = _items_by_code(doc.items)
-
-    for item_code in old_codes | new_codes:
-        _sync_psi_quantities(item_code)
+    in the same state are picked up too. Pipeline/Backlog stay owned by Excel LC
+    Pipeline's on_submit/on_cancel — not touched here."""
+    _sync_psi_deltas(doc, doc.get_doc_before_save())
 
 
 def on_cancel(doc, method=None):
-    """Resync this request's items after cancellation — the cancelled request's
-    own qty naturally drops out of both the active and approved sums."""
-    for item_code in _items_by_code(doc.items):
-        _sync_psi_quantities(item_code)
+    """cancel() saves the doc with docstatus=2, so get_doc_before_save() still
+    gives us the pre-cancel state (e.g. Approved/docstatus 1) to remove this
+    request's qty out of whichever bucket it was contributing to."""
+    _sync_psi_deltas(doc, doc.get_doc_before_save())

@@ -13,6 +13,14 @@ function total_calc2(frm, cdt, cdn) {
 }
 frappe.ui.form.on("Excel LC Pipeline", "eta", total_calc2);
 
+// frappe.ui.form.on('Excel LC Pipeline', 'on_save',  function(frm) {
+//     if (frm.doc.pipeline_status ==='Complete') {
+//         frm.set_df_property('pipeline_status', 'read_only', 0);
+//         msgprint('The Pipeline Status Should be In Progress!');
+//         validate = false;
+//     }
+// });
+
 frappe.ui.form.on('Excel LC Pipeline', 'before_submit',  function(frm) {
     if (frm.doc.pipeline_status !='In Progress') {
         msgprint('The Pipeline Status Should be In Progress!');
@@ -21,7 +29,7 @@ frappe.ui.form.on('Excel LC Pipeline', 'before_submit',  function(frm) {
 });
 
 frappe.ui.form.on('Excel LC Pipeline', 'refresh', function(frm) {
-    if (frm.doc.pipeline_status === 'Complete') {
+    if (frm.doc.pipeline_status === 'Complete' && frm.doc.docstatus != 0) {
         frm.set_df_property('pipeline_status', 'read_only', 1);
     } else {
         frm.set_df_property('pipeline_status', 'read_only', 0);
