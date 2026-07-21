@@ -21,8 +21,8 @@
   "total_budget_cost",
   "actual_cost",
   "column_break_zta4x",
-  "profitloss",
-  "profit_",
+  "profitloss_amount",
+  "profit_percentage",
   "section_break_c1dhm",
   "team_cost",
   "labor_cost",
@@ -68,8 +68,7 @@
   },
   {
    "fieldname": "column_break_ppwhu",
-   "fieldtype": "Column Break",
-   "label": "Financial Overview"
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "start_date",
@@ -99,21 +98,12 @@
   {
    "fieldname": "actual_cost",
    "fieldtype": "Currency",
-   "label": "Actual Cost"
+   "label": "Actual Cost",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_zta4x",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "profitloss",
-   "fieldtype": "Currency",
-   "label": "Profit/Loss"
-  },
-  {
-   "fieldname": "profit_",
-   "fieldtype": "Currency",
-   "label": "Profit %"
   },
   {
    "fieldname": "section_break_c1dhm",
@@ -152,12 +142,14 @@
   {
    "fieldname": "total_running_cost",
    "fieldtype": "Currency",
-   "label": "Total Running Cost"
+   "label": "Total Running Cost",
+   "read_only": 1
   },
   {
    "fieldname": "remaining_budget",
    "fieldtype": "Currency",
-   "label": "Remaining Budget"
+   "label": "Remaining Budget",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_tlzrv",
@@ -177,7 +169,8 @@
   {
    "fieldname": "remaining_iou",
    "fieldtype": "Currency",
-   "label": "Remaining IOU"
+   "label": "Remaining IOU",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_hshnb",
@@ -201,18 +194,31 @@
   {
    "fieldname": "pending_voucher",
    "fieldtype": "Currency",
-   "label": "Pending Voucher"
+   "label": "Pending Voucher",
+   "read_only": 1
   },
   {
    "fieldname": "project_information_section",
    "fieldtype": "Section Break",
    "label": "Project Informations"
+  },
+  {
+   "fieldname": "profitloss_amount",
+   "fieldtype": "Currency",
+   "label": "Profit/Loss",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profit_percentage",
+   "fieldtype": "Currency",
+   "label": "Profit/Loss %",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-14 13:04:35.278986",
+ "modified": "2026-07-21 13:51:06.162678",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Live Project Dashboard",
