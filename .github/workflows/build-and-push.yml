@@ -33,7 +33,6 @@ jobs:
             {"url": "https://github.com/frappe/erpnext", "branch": "v14.60.1"},
             {"url": "https://github.com/frappe/hrms.git", "branch": "v14.21.0"},
             {"url": "https://gitlab.com/excel.azmin/whitelabel.git", "branch": "main"},
-            {"url": "https://github.com/Excel-Technologies-Ltd/Adist.git", "branch": "main"},
             {"url": "https://github.com/Excel-Technologies-Ltd/Excel-ERPNext.git", "branch": "version-14"}
           ]
           '
@@ -48,6 +47,6 @@ jobs:
           --build-arg PYTHON_VERSION=3.11.9 \
           --build-arg NODE_VERSION=20.19.2  \
           --build-arg APPS_JSON_BASE64="$APPS_JSON_BASE64" \
-          --tag arcapps/excel_erpnext:dev \
+          --tag arcapps/erpnext-v14:latest \
           --file images/custom/Containerfile \
           --push .
