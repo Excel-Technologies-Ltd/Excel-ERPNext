@@ -161,16 +161,21 @@
    "label": "IOU & Vouchers"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "approved_iou",
    "fieldtype": "Currency",
-   "label": "Approved IOU"
+   "label": "Approved IOU",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "pending_iou",
    "fieldtype": "Currency",
-   "label": "Pending IOU"
+   "label": "Pending IOU",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "remaining_iou",
    "fieldtype": "Currency",
    "label": "Remaining IOU",
@@ -191,11 +196,14 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "iou_voucher",
    "fieldtype": "Currency",
-   "label": "IOU Voucher"
+   "label": "IOU Voucher",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "pending_voucher",
    "fieldtype": "Currency",
    "label": "Pending Voucher",
@@ -222,7 +230,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-26 12:17:09.576124",
+ "modified": "2026-07-26 16:14:39.609256",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Live Project Dashboard",

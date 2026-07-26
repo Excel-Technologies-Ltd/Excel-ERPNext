@@ -36,7 +36,7 @@ def get_iou_totals(wo_number):
 		voucher_rows = frappe.get_all(
 			"Journal Entry Account",
 			filters={
-				"docstatus": 1,
+				"docstatus": ["in", [0, 1]],
 				"party_type": "Employee",
 				"reference_type": "Employee Advance",
 				"reference_name": ["in", advance_names],
