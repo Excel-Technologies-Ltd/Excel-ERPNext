@@ -58,13 +58,17 @@
   },
   {
    "fieldname": "wo_number",
-   "fieldtype": "Data",
-   "label": "WO Number"
+   "fieldtype": "Link",
+   "label": "WO Number",
+   "options": "Project Work Order",
+   "reqd": 1
   },
   {
+   "fetch_from": "wo_number.work_order_date",
    "fieldname": "wo_date",
    "fieldtype": "Date",
-   "label": "WO Date"
+   "label": "WO Date",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_ppwhu",
@@ -218,7 +222,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-21 13:51:06.162678",
+ "modified": "2026-07-26 12:17:09.576124",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Live Project Dashboard",

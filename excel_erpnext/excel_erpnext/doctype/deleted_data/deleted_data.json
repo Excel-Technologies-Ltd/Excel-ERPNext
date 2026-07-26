@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-07-26 13:51:52.621872",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "id",
+  "deleted_id",
+  "table_name",
+  "is_processed",
+  "deleted_datetime",
+  "modified_user",
+  "owner_user"
+ ],
+ "fields": [
+  {
+   "fieldname": "id",
+   "fieldtype": "Data",
+   "label": "ID"
+  },
+  {
+   "fieldname": "deleted_id",
+   "fieldtype": "Data",
+   "label": "Deleted Id"
+  },
+  {
+   "fieldname": "table_name",
+   "fieldtype": "Data",
+   "label": "Table Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_processed",
+   "fieldtype": "Check",
+   "label": "Is Processed"
+  },
+  {
+   "fieldname": "deleted_datetime",
+   "fieldtype": "Datetime",
+   "label": "Deleted Datetime"
+  },
+  {
+   "fieldname": "modified_user",
+   "fieldtype": "Link",
+   "label": "Modified By",
+   "options": "User"
+  },
+  {
+   "fieldname": "owner_user",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-26 13:52:24.824576",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Deleted Data",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -3,9 +3,36 @@
 
 frappe.ui.form.on('Live Project Dashboard', {
 	refresh: function(frm) {
-		calculate_totals(frm);
+		fetch_iou_totals(frm);
+	},
+	wo_number: function(frm) {
+		fetch_iou_totals(frm);
 	}
 });
+
+function fetch_iou_totals(frm) {
+	if (!frm.doc.wo_number) {
+		calculate_totals(frm);
+		return;
+	}
+
+	frappe.call({
+		method: 'excel_erpnext.excel_erpnext.doctype.live_project_dashboard.live_project_dashboard.get_iou_totals',
+		args: {
+			wo_number: frm.doc.wo_number
+		},
+		callback: function(r) {
+			if (r.message) {
+				frm.set_value({
+					approved_iou: r.message.approved_iou,
+					pending_iou: r.message.pending_iou,
+					iou_voucher: r.message.iou_voucher,
+				});
+			}
+			calculate_totals(frm);
+		}
+	});
+}
 
 function calculate_totals(frm) {
 	let total_running_cost = flt(frm.doc.others_cost)
