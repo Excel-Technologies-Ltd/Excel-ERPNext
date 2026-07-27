@@ -300,4 +300,20 @@ scheduler_events = {
 #         ]
 #     },
 # ]
-fixtures = ['Custom Field',  "Property Setter",]
+fixtures = ['Custom Field',  "Property Setter",
+            {
+                "dt": "Role",
+                "filters": [
+                    [
+                        "name",
+                        "in",
+                        [
+                            "Branch Stock RnD Remover",
+                            "Finance Officer",
+                            "Product Specialist",
+                            "Managing Directors",
+                            
+                        ],
+                    ],  
+                ]    
+            } ]
