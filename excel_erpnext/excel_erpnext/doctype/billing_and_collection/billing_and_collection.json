@@ -14,7 +14,9 @@
   "billing_and_collections",
   "section_break_ubcby",
   "invoice_total",
+  "column_break_ftct7",
   "collection_total",
+  "column_break_3na1g",
   "outstanding_total",
   "amended_from"
  ],
@@ -55,28 +57,40 @@
    "fieldname": "work_order",
    "fieldtype": "Link",
    "label": "Work Order",
-   "options": "Work Order"
+   "options": "Project Work Order",
+   "reqd": 1
   },
   {
    "fieldname": "invoice_total",
    "fieldtype": "Float",
-   "label": "Invoice Total"
+   "label": "Invoice Total",
+   "read_only": 1
   },
   {
    "fieldname": "collection_total",
-   "fieldtype": "Data",
-   "label": "Collection Total"
+   "fieldtype": "Float",
+   "label": "Collection Total",
+   "read_only": 1
   },
   {
    "fieldname": "outstanding_total",
-   "fieldtype": "Data",
-   "label": "Outstanding Total"
+   "fieldtype": "Float",
+   "label": "Outstanding Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ftct7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_3na1g",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-28 11:17:56.879702",
+ "modified": "2026-07-28 11:52:57.327459",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Billing and Collection",
