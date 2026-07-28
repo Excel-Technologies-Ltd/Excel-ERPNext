@@ -48,6 +48,6 @@ jobs:
           --build-arg PYTHON_VERSION=3.11.9 \
           --build-arg NODE_VERSION=20.19.2  \
           --build-arg APPS_JSON_BASE64="$APPS_JSON_BASE64" \
-          --tag registry.gitlab.com/arcapps/arc-container-registry/erpnext-v14:v2.0 \
+          --tag registry.gitlab.com/arcapps/arc-container-registry/erpnext-v14:v2.0.7 \
           --file images/custom/Containerfile \
           --push .
