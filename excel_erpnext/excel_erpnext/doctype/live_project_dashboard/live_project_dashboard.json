@@ -61,7 +61,8 @@
    "fieldtype": "Link",
    "label": "WO Number",
    "options": "Project Work Order",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fetch_from": "wo_number.work_order_date",
@@ -230,7 +231,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-26 16:14:39.609256",
+ "modified": "2026-07-28 11:32:33.893177",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Live Project Dashboard",

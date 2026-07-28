@@ -53,6 +53,7 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "fieldname": "brand",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -60,6 +61,7 @@
    "options": "Excel SCM Brand List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "supplier_name",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -67,6 +69,7 @@
    "options": "Excel SCM Supplier and Shipper List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_pi_no",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -78,6 +81,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "shipper",
    "fieldtype": "Link",
@@ -85,12 +89,14 @@
    "options": "Excel SCM Supplier and Shipper List"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "lc_pi_no",
    "fieldtype": "Data",
    "label": "LC PI No"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "lc_pi_value",
    "fieldtype": "Currency",
@@ -104,6 +110,7 @@
    "options": "FILE-.####"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "lc_no",
    "fieldtype": "Data",
@@ -111,12 +118,14 @@
    "label": "LC No"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "lc_date",
    "fieldtype": "Date",
    "label": "LC Date"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "lc_opening_bank",
    "fieldtype": "Link",
@@ -124,6 +133,7 @@
    "options": "Excel SCM LC Opening Bank List"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "insurance_provider",
    "fieldtype": "Link",
@@ -131,6 +141,7 @@
    "options": "Excel SCM Insurance Provider List"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "freight_forwarder",
    "fieldtype": "Link",
@@ -138,41 +149,48 @@
    "options": "Excel SCM Freight Forwarder List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "on_board_date",
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "On Board Date"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "container_size",
    "fieldtype": "Data",
    "label": "Container Size"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "bl_no",
    "fieldtype": "Data",
    "label": "BL No"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "ci_value",
    "fieldtype": "Currency",
    "label": "CI Value"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "boe_no",
    "fieldtype": "Data",
    "label": "BOE No"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "boe_date",
    "fieldtype": "Date",
    "label": "BOE Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "cnf_agent",
    "fieldtype": "Link",
    "label": "CnF Agent",
@@ -200,17 +218,20 @@
    "options": "In Progress\nComplete"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "lot_no",
    "fieldtype": "Data",
    "label": "Lot No"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_pi_value",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Actual PI Value"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "cnee_name",
    "fieldtype": "Link",
@@ -218,35 +239,41 @@
    "options": "Excel SCM CNEE List"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "carton_qty",
    "fieldtype": "Int",
    "label": "Carton Qty"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "final_destination",
    "fieldtype": "Link",
    "label": "Final Destination",
    "options": "Excel SCM Destination List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "eta",
    "fieldtype": "Date",
    "label": "ETA"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "etr",
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "ETR"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "transport_agency",
    "fieldtype": "Link",
    "label": "Transport Agency",
    "options": "Excel SCM Transport and CnF List"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.shipment_mode != 'AIR BY C&F'",
    "fieldname": "carrier",
    "fieldtype": "Data",
@@ -262,17 +289,20 @@
    "options": "Excel SCM Shipment Status List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_pi_date",
    "fieldtype": "Date",
    "label": "Actual PI Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_pi_currency",
    "fieldtype": "Link",
    "label": "Actual PI Currency",
    "options": "Currency"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipment_mode",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -280,11 +310,13 @@
    "options": "Excel SCM Shipment Mode List"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "ci_no",
    "fieldtype": "Data",
    "label": "CI No"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "duty_payment_date",
    "fieldtype": "Date",
    "label": "Duty Payment Date"
@@ -300,11 +332,13 @@
    "fieldtype": "Section Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "goods_receiving_date",
    "fieldtype": "Date",
    "label": "Goods Receiving Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipper_received_amount",
    "fieldtype": "Currency",
    "label": "Shipper Received Amount"
@@ -312,7 +346,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-16 13:48:17.604655",
+ "modified": "2026-07-28 11:01:38.669690",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Excel LC Pipeline",

@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "work_order",
   "project",
   "total_wo_value",
   "total_final_bill_amount",
@@ -16,7 +17,7 @@
   "total_cost_amount",
   "total_collected_amount",
   "profitloss",
-  "margin_",
+  "margin",
   "amended_from"
  ],
  "fields": [
@@ -47,7 +48,8 @@
   {
    "fieldname": "total_cost_amount",
    "fieldtype": "Currency",
-   "label": "Total Cost Amount"
+   "label": "Total Cost Amount",
+   "read_only": 1
   },
   {
    "fieldname": "total_collected_amount",
@@ -57,12 +59,8 @@
   {
    "fieldname": "profitloss",
    "fieldtype": "Data",
-   "label": "Profit/Loss"
-  },
-  {
-   "fieldname": "margin_",
-   "fieldtype": "Data",
-   "label": "Margin (%)"
+   "label": "Profit/Loss",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -77,12 +75,25 @@
   {
    "fieldname": "column_break_qhub3",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Project Work Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "margin",
+   "fieldtype": "Data",
+   "label": "Margin (%)",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-14 17:52:50.474394",
+ "modified": "2026-07-28 11:45:53.805471",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Project Wise Profit",

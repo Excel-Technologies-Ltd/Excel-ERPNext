@@ -9,16 +9,13 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
-  "section_break_gxca5",
-  "project",
-  "sales_invoice",
-  "invoice_date",
-  "invoice_amount",
-  "column_break_rgrze",
-  "collection_amount",
-  "collection_date",
-  "outstanding",
-  "remarks",
+  "work_order",
+  "section_break_cwpul",
+  "billing_and_collections",
+  "section_break_ubcby",
+  "invoice_total",
+  "collection_total",
+  "outstanding_total",
   "amended_from"
  ],
  "fields": [
@@ -31,12 +28,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "label": "Project Name",
-   "options": "Project"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -47,54 +38,45 @@
    "search_index": 1
   },
   {
-   "fieldname": "sales_invoice",
-   "fieldtype": "Link",
-   "label": "Invoice No",
-   "options": "Sales Invoice"
+   "fieldname": "billing_and_collections",
+   "fieldtype": "Table",
+   "label": "Billing and Collections",
+   "options": "Billing and Collection Details"
   },
   {
-   "fieldname": "invoice_date",
-   "fieldtype": "Date",
-   "label": "Invoice Date"
-  },
-  {
-   "fieldname": "invoice_amount",
-   "fieldtype": "Currency",
-   "label": "Invoice Amount"
-  },
-  {
-   "fieldname": "collection_amount",
-   "fieldtype": "Currency",
-   "label": "Collection Amount"
-  },
-  {
-   "fieldname": "collection_date",
-   "fieldtype": "Date",
-   "label": "Collection Date"
-  },
-  {
-   "fieldname": "outstanding",
-   "fieldtype": "Currency",
-   "label": "Outstanding"
-  },
-  {
-   "fieldname": "remarks",
-   "fieldtype": "Data",
-   "label": "Remarks"
-  },
-  {
-   "fieldname": "column_break_rgrze",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "section_break_gxca5",
+   "fieldname": "section_break_ubcby",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_cwpul",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Work Order"
+  },
+  {
+   "fieldname": "invoice_total",
+   "fieldtype": "Float",
+   "label": "Invoice Total"
+  },
+  {
+   "fieldname": "collection_total",
+   "fieldtype": "Data",
+   "label": "Collection Total"
+  },
+  {
+   "fieldname": "outstanding_total",
+   "fieldtype": "Data",
+   "label": "Outstanding Total"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-14 17:42:03.951601",
+ "modified": "2026-07-28 11:17:56.879702",
  "modified_by": "Administrator",
  "module": "Excel ERPNext",
  "name": "Billing and Collection",
