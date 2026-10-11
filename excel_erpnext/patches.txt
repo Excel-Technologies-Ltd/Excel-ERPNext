@@ -1,0 +1,4 @@
+[pre_model_sync]
+
+[post_model_sync]
+excel_erpnext.patches.add_lc_pipeline_allocation_fields

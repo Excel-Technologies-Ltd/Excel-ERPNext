@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-10-11 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "proposed_quantity",
+  "lc_quantity",
+  "remaining_quantity",
+  "rate_usd",
+  "rate_bdt"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "columns": 3,
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "proposed_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Proposed Quantity",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "lc_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "LC Quantity",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "remaining_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Remaining Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_usd",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate (USD)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_bdt",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rate BDT",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-11 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel LC Pipeline Item Summary",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

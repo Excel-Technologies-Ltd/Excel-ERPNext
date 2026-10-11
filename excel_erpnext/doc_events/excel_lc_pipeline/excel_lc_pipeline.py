@@ -2,6 +2,13 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from excel_erpnext.api.lc_pipeline_allocation import (
+	apply_allocation_deltas,
+	rebuild_items_summary,
+	recompute_row_remaining,
+	validate_allocation_rows,
+)
+
 
 def _get_excel_psi(item_code):
 	name = frappe.db.get_value("Excel PSI", {"item_code": item_code}, "name")
@@ -26,12 +33,23 @@ def validate(doc, method=None):
 				).format(item.idx, flt(item.qty), frappe.bold(item.item_code), available)
 			)
 
+	# Material Request allocation: early row checks, per-row Remaining Qty, and the
+	# read-only summary -- all kept in sync server-side (client recompute is only
+	# for live UX).
+	validate_allocation_rows(doc)
+	recompute_row_remaining(doc)
+	rebuild_items_summary(doc)
+
 
 def on_submit(doc, method=None):
 	"""Submitting an LC Pipeline is what puts its qty into Excel PSI's Pipeline now
 	(drafts no longer touch Pipeline at all). Also closes out Under Production:
 	whatever this submission's qty didn't cover of the current Under Production
 	carries forward into Backlog, then Under Production resets to 0."""
+	# Allocate against Material Request rows first (locks each source row and
+	# rejects over-allocation) so a failure aborts before any PSI mutation.
+	apply_allocation_deltas(doc, sign=1)
+
 	for item in doc.custom_items:
 		if not item.item_code or not item.qty:
 			continue
@@ -98,3 +116,8 @@ def on_cancel(doc, method=None):
 		psi.cancelled_lc_pipeline_qty = flt(psi.cancelled_lc_pipeline_qty) + flt(item.qty)
 		psi.flags.ignore_permissions = True
 		psi.save()
+
+	# Release the quantities this pipeline had allocated from Material Request rows
+	# so they become available again. cancel() runs once (docstatus 1 -> 2), so
+	# there is no double reversal.
+	apply_allocation_deltas(doc, sign=-1)
