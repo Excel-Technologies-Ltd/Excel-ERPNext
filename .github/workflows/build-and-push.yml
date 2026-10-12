@@ -9,6 +9,12 @@ on:
         default: "version-14"
         type: string
 
+env:
+  REGISTRY: registry.aninda.me
+  HARBOR_PROJECT: arcapps
+  BASE_REGISTRY: registry.aninda.me/dockerhub/library
+  TAG: 'latest'        
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -21,11 +27,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: login to harbor
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Pull base image through Harbor proxy
+        run: |
+          sed -i "s|^FROM python:|FROM ${BASE_REGISTRY}/python:|" images/custom/Containerfile
+          grep -n "^FROM" images/custom/Containerfile
 
       - name: Build and Push Frappe Docker Image
         run: |
@@ -47,6 +59,6 @@ jobs:
           --build-arg PYTHON_VERSION=3.11.9 \
           --build-arg NODE_VERSION=20.19.2  \
           --build-arg APPS_JSON_BASE64="$APPS_JSON_BASE64" \
-          --tag arcapps/erpnext-v14:latest \
+          --tag ${REGISTRY}/${HARBOR_PROJECT}/erpnext-v14:latest \
           --file images/custom/Containerfile \
           --push .
