@@ -9,6 +9,7 @@ from frappe.utils import flt, nowdate
 
 from excel_erpnext.api.lc_pipeline_allocation import (
 	apply_allocation_deltas,
+	get_material_request_item_detail,
 	get_material_requests_for_item,
 	rebuild_items_summary,
 	recompute_row_remaining,
@@ -30,7 +31,7 @@ def _leaf_item_group():
 
 def _ensure_item(code=TEST_ITEM):
 	if not frappe.db.exists("Item", code):
-		frappe.get_doc(
+		doc = frappe.get_doc(
 			{
 				"doctype": "Item",
 				"item_code": code,
@@ -39,7 +40,12 @@ def _ensure_item(code=TEST_ITEM):
 				"stock_uom": "Nos",
 				"is_stock_item": 0,
 			}
-		).insert(ignore_permissions=True)
+		)
+		# Site may carry mandatory custom fields on Item (e.g. brand,
+		# has_excel_serials); the allocation logic under test doesn't depend on
+		# them, so bypass mandatory validation here.
+		doc.flags.ignore_mandatory = True
+		doc.insert(ignore_permissions=True)
 	return code
 
 
@@ -91,6 +97,18 @@ class TestExcelLCPipeline(FrappeTestCase):
 		self.assertNotIn(mr2, names)
 		self.assertNotIn(mr3, names)
 		self.assertNotIn(mr4, names)
+
+	def test_manual_mr_detail_lookup(self):
+		item = _ensure_item()
+		mr, mri = _make_mr(item, 90, "Approved", 30)  # request 90, pipeline 30 -> remaining 60
+
+		detail = get_material_request_item_detail(mr, item)
+		self.assertEqual(detail["material_request_item"], mri)
+		self.assertEqual(flt(detail["request_qty"]), 90)
+		self.assertEqual(flt(detail["remaining_qty"]), 60)
+
+		# No matching item row on that request -> empty dict.
+		self.assertEqual(get_material_request_item_detail(mr, "_Test LC Alloc Item 2"), {})
 
 	def test_allocation_increments_and_release(self):
 		item = _ensure_item()
@@ -156,6 +174,8 @@ class TestExcelLCPipeline(FrappeTestCase):
 		self.assertEqual(flt(summary.lc_quantity), 175)  # 100 + 50 + 25 (allocated)
 		self.assertEqual(flt(summary.remaining_quantity), 35)  # 210 - 175
 		self.assertEqual(flt(summary.rate_usd), 6)  # 2 + 3 + 1
+		# Total Amount = sum of each row's Amount (qty * rate): 100*2 + 50*3 + 25*1
+		self.assertEqual(flt(summary.total_amount_usd), 375)
 
 	def test_row_remaining_is_request_minus_qty(self):
 		item = _ensure_item()

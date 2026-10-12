@@ -64,6 +64,92 @@ def get_material_requests_for_item(item_code):
 	return rows
 
 
+@frappe.whitelist()
+def get_material_request_item_detail(material_request, item_code):
+	"""Return the matching Material Request Item row for a manually selected
+	``material_request`` + ``item_code``.
+
+	Used when a user picks a Material Request directly in the Items grid (instead
+	of via the Fetch dialog) so Request Qty / MR Item Ref back-fill and Remaining
+	can compute. When the request carries more than one row for the same item, the
+	one with positive remaining quantity is preferred (else the first row).
+
+	Remaining Qty = Request Qty (qty) - Pipeline Qty (custom_pipeline_qty).
+	"""
+	if not material_request or not item_code:
+		return {}
+
+	frappe.has_permission("Material Request", throw=True)
+
+	rows = frappe.db.sql(
+		"""
+		SELECT
+			mri.name AS material_request_item,
+			mri.parent AS material_request,
+			mri.item_code AS item_code,
+			mri.item_name AS item_name,
+			mri.qty AS request_qty,
+			IFNULL(mri.custom_pipeline_qty, 0) AS pipeline_qty,
+			(mri.qty - IFNULL(mri.custom_pipeline_qty, 0)) AS remaining_qty
+		FROM `tabMaterial Request Item` mri
+		WHERE mri.parent = %(material_request)s
+			AND mri.item_code = %(item_code)s
+		ORDER BY (mri.qty - IFNULL(mri.custom_pipeline_qty, 0)) DESC, mri.idx ASC
+		""",
+		{"material_request": material_request, "item_code": item_code},
+		as_dict=True,
+	)
+	return rows[0] if rows else {}
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def material_request_link_query(doctype, txt, searchfield, start, page_len, filters):
+	"""Link-field query for the ``Material Request`` column in the Items grid.
+
+	Restricts the dropdown to Material Requests that are:
+	  - Submitted (``docstatus = 1``), and
+	  - contain the currently selected ``item_code`` on at least one of their rows.
+
+	``item_code`` is passed through ``filters`` from the grid row; when it is empty
+	(no item chosen yet) the item restriction is skipped and only submitted requests
+	are shown.
+	"""
+	filters = filters or {}
+	item_code = filters.get("item_code")
+
+	conditions = ["mr.docstatus = 1"]
+	params = {
+		"txt": "%%%s%%" % txt,
+		"start": start,
+		"page_len": page_len,
+	}
+
+	if item_code:
+		# Only requests that still have available quantity for this item
+		# (Quantity - Pipeline Qty > 0) -- mirrors the Fetch Material Requests dialog.
+		conditions.append(
+			"EXISTS (SELECT 1 FROM `tabMaterial Request Item` mri "
+			"WHERE mri.parent = mr.name AND mri.item_code = %(item_code)s "
+			"AND (mri.qty - IFNULL(mri.custom_pipeline_qty, 0)) > %(eps)s)"
+		)
+		params["item_code"] = item_code
+		params["eps"] = _EPS
+
+	where = " AND ".join(conditions)
+	return frappe.db.sql(
+		"""
+		SELECT mr.name, mr.title
+		FROM `tabMaterial Request` mr
+		WHERE {where}
+			AND (mr.name LIKE %(txt)s OR mr.title LIKE %(txt)s)
+		ORDER BY mr.transaction_date DESC, mr.name DESC
+		LIMIT %(start)s, %(page_len)s
+		""".format(where=where),
+		params,
+	)
+
+
 # ---------------------------------------------------------------------------
 # Summary table
 # ---------------------------------------------------------------------------
@@ -89,7 +175,7 @@ def rebuild_items_summary(doc):
 	- Remaining Quantity: Proposed - LC (= sum of each row's Request - Quantity).
 	- Rate (USD)        : sum of the item's row ``rate`` (blank when the item has
 	                      no rows -- i.e. no summary row is emitted at all).
-	- Rate BDT          : 0 for now (new column; wire a BDT source here later).
+	- Total Amount (USD): sum of the item's row Amount (qty * rate).
 	"""
 	groups = {}
 	order = []
@@ -97,12 +183,14 @@ def rebuild_items_summary(doc):
 		if not row.item_code:
 			continue
 		if row.item_code not in groups:
-			groups[row.item_code] = {"proposed": 0.0, "lc": 0.0, "rate_usd": 0.0}
+			groups[row.item_code] = {"proposed": 0.0, "lc": 0.0, "rate_usd": 0.0, "amount": 0.0}
 			order.append(row.item_code)
 		# Request Quantity is the "proposed"; fall back to qty for manual rows.
 		groups[row.item_code]["proposed"] += flt(row.get("custom_request_qty")) or flt(row.qty)
 		groups[row.item_code]["lc"] += flt(row.qty)
 		groups[row.item_code]["rate_usd"] += flt(row.rate)
+		# Total Amount is the sum of each row's Amount (qty * rate).
+		groups[row.item_code]["amount"] += flt(row.get("amount")) or (flt(row.qty) * flt(row.rate))
 
 	doc.set("custom_items_summary", [])
 	for item_code in order:
@@ -115,7 +203,7 @@ def rebuild_items_summary(doc):
 				"lc_quantity": g["lc"],
 				"remaining_quantity": g["proposed"] - g["lc"],
 				"rate_usd": g["rate_usd"],
-				"rate_bdt": 0.0,  # TODO: wire to BDT/exchange source when defined
+				"total_amount_usd": g["amount"],
 			},
 		)
 

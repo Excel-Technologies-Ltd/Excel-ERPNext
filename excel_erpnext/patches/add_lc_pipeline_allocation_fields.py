@@ -58,12 +58,16 @@ def get_custom_fields():
 			},
 			{
 				"fieldname": "custom_request_qty",
-				"label": "Request Quantity",
+				"label": "PO Qty",
 				"fieldtype": "Float",
 				"insert_after": "qty",
 				"read_only": 1,
 				"in_list_view": 1,
 				"columns": 1,
+				"description": (
+					"Quantity still available on the source Material Request row "
+					"(Material Request Item Quantity - Pipeline Qty)."
+				),
 			},
 			{
 				"fieldname": "custom_remaining_qty",

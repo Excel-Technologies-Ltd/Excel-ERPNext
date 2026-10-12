@@ -54,8 +54,12 @@ frappe.ui.form.on("Excel LC Pipeline", {
 // ---------------------------------------------------------------------------
 
 frappe.ui.form.on('Excel LC Pipeline', {
+    onload(frm) {
+        set_material_request_query(frm);
+    },
     refresh(frm) {
         add_fetch_mr_button(frm);
+        set_material_request_query(frm);
         // Self-correct stale Remaining Qty / Summary when opening an editable doc
         // (e.g. saved before this logic existed). Only writes when values actually
         // differ, so it won't gratuitously mark the form dirty.
@@ -74,10 +78,66 @@ frappe.ui.form.on('Excel LC Pipeline Item', {
     qty(frm) { sync_computed_fields(frm); },
     rate(frm) { sync_computed_fields(frm); },
     amount(frm) { sync_computed_fields(frm); },
-    item_code(frm) { sync_computed_fields(frm); },
+    item_code(frm, cdt, cdn) {
+        // Item changed under an already-chosen MR -> re-fetch against the new item.
+        const row = locals[cdt][cdn];
+        if (row.custom_material_request) {
+            fetch_mr_detail_for_row(frm, cdt, cdn);
+        } else {
+            sync_computed_fields(frm);
+        }
+    },
+    custom_material_request(frm, cdt, cdn) {
+        fetch_mr_detail_for_row(frm, cdt, cdn);
+    },
     custom_items_add(frm) { sync_computed_fields(frm); },
     custom_items_remove(frm) { sync_computed_fields(frm); }
 });
+
+// Back-fill Request Qty + MR Item Ref when a Material Request is picked directly
+// in the Items grid (mirrors what the Fetch dialog does), then recompute Remaining.
+function fetch_mr_detail_for_row(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+    if (!row.custom_material_request || !row.item_code) {
+        frappe.model.set_value(cdt, cdn, 'custom_material_request_item', '');
+        frappe.model.set_value(cdt, cdn, 'custom_request_qty', 0);
+        sync_computed_fields(frm);
+        return;
+    }
+    frappe.call({
+        method: 'excel_erpnext.api.lc_pipeline_allocation.get_material_request_item_detail',
+        args: { material_request: row.custom_material_request, item_code: row.item_code },
+        callback: (r) => {
+            const d = r.message || {};
+            if (!d.material_request_item) {
+                frappe.msgprint(__('Material Request {0} has no row for item {1}.',
+                    [row.custom_material_request, row.item_code]));
+                frappe.model.set_value(cdt, cdn, 'custom_material_request', '');
+                frappe.model.set_value(cdt, cdn, 'custom_material_request_item', '');
+                frappe.model.set_value(cdt, cdn, 'custom_request_qty', 0);
+                sync_computed_fields(frm);
+                return;
+            }
+            frappe.model.set_value(cdt, cdn, 'custom_material_request_item', d.material_request_item);
+            // PO Qty = quantity still available on the MR row (qty - pipeline qty).
+            frappe.model.set_value(cdt, cdn, 'custom_request_qty', d.remaining_qty);
+            // custom_remaining_qty is derived (PO Qty - Quantity) by sync_computed_fields.
+            sync_computed_fields(frm);
+        }
+    });
+}
+
+// Restrict the Items grid's "Material Request" link column to Submitted requests
+// that actually contain the row's selected item.
+function set_material_request_query(frm) {
+    frm.set_query('custom_material_request', 'custom_items', function (doc, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        return {
+            query: 'excel_erpnext.api.lc_pipeline_allocation.material_request_link_query',
+            filters: { item_code: row.item_code }
+        };
+    });
+}
 
 function add_fetch_mr_button(frm) {
     const field = frm.fields_dict.custom_items;
@@ -153,8 +213,8 @@ function load_mr_rows(d) {
                 <thead><tr>
                     <th style="width:32px;"></th>
                     <th>${__('Material Request')}</th>
-                    <th class="text-right">${__('Request Qty')}</th>
-                    <th class="text-right">${__('Pipeline Qty')}</th>
+                    <th class="text-right">${__('PO Qty')}</th>
+                    <th class="text-right">${__('LC Pipeline Qty')}</th>
                     <th class="text-right">${__('Remaining Qty')}</th>
                     <th style="width:140px;">${__('Allocation Qty')}</th>
                 </tr></thead><tbody>`;
@@ -213,9 +273,10 @@ function allocate_selected_mr(frm, d) {
             item_name: src.item_name,
             custom_material_request: src.material_request,
             custom_material_request_item: src.material_request_item,
-            custom_request_qty: src.request_qty,
-            // Remaining Qty on the row reflects Request - allocated Quantity.
-            custom_remaining_qty: flt(src.request_qty) - alloc,
+            // PO Qty = quantity still available on the MR row (qty - pipeline qty).
+            custom_request_qty: src.remaining_qty,
+            // Remaining Qty on the row reflects PO Qty - allocated Quantity.
+            custom_remaining_qty: flt(src.remaining_qty) - alloc,
             qty: alloc
         });
         added.push(child);
@@ -232,18 +293,20 @@ function allocate_selected_mr(frm, d) {
 }
 
 // Group custom_items by item_code -> desired summary rows.
-//   Proposed Quantity = sum(Request Qty)  (fallback to qty for manual rows)
-//   LC Quantity       = sum(Quantity)     (allocated on this LC)
+//   Proposed Quantity = sum(Request Qty)   (fallback to qty for manual rows)
+//   LC Pipeline Qty   = sum(Quantity)      (allocated on this LC)
 //   Remaining         = Proposed - LC
+//   Total Amount (USD)= sum of each row's Amount (qty * rate)
 function compute_summary_rows(frm) {
     const groups = {};
     const order = [];
     (frm.doc.custom_items || []).forEach((row) => {
         if (!row.item_code) return;
-        if (!groups[row.item_code]) { groups[row.item_code] = { proposed: 0, lc: 0, rate_usd: 0 }; order.push(row.item_code); }
+        if (!groups[row.item_code]) { groups[row.item_code] = { proposed: 0, lc: 0, rate_usd: 0, amount: 0 }; order.push(row.item_code); }
         groups[row.item_code].proposed += (flt(row.custom_request_qty) || flt(row.qty));
         groups[row.item_code].lc += flt(row.qty);
         groups[row.item_code].rate_usd += flt(row.rate);
+        groups[row.item_code].amount += (flt(row.amount) || (flt(row.qty) * flt(row.rate)));
     });
     return order.map((item_code) => {
         const g = groups[item_code];
@@ -253,7 +316,7 @@ function compute_summary_rows(frm) {
             lc_quantity: g.lc,
             remaining_quantity: g.proposed - g.lc,
             rate_usd: g.rate_usd,
-            rate_bdt: 0
+            total_amount_usd: g.amount
         };
     });
 }
@@ -283,7 +346,8 @@ function sync_computed_fields(frm) {
                 || flt(c.proposed_quantity) !== d.proposed_quantity
                 || flt(c.lc_quantity) !== d.lc_quantity
                 || flt(c.remaining_quantity) !== d.remaining_quantity
-                || flt(c.rate_usd) !== d.rate_usd) {
+                || flt(c.rate_usd) !== d.rate_usd
+                || flt(c.total_amount_usd) !== d.total_amount_usd) {
                 summary_differs = true;
                 break;
             }

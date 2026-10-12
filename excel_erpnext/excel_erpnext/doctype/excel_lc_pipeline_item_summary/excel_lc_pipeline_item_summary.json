@@ -11,7 +11,7 @@
   "lc_quantity",
   "remaining_quantity",
   "rate_usd",
-  "rate_bdt"
+  "total_amount_usd"
  ],
  "fields": [
   {
@@ -37,7 +37,7 @@
    "fieldname": "lc_quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "LC Quantity",
+   "label": "LC Pipeline Qty",
    "read_only": 1
   },
   {
@@ -56,10 +56,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "rate_bdt",
-   "fieldtype": "Float",
+   "fieldname": "total_amount_usd",
+   "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Rate BDT",
+   "label": "Total Amount (USD)",
    "read_only": 1
   }
  ],
