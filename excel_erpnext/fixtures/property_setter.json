@@ -5617,22 +5617,6 @@
  },
  {
   "default_value": null,
-  "doc_type": "Journal Entry",
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": "DocType",
-  "field_name": null,
-  "is_system_generated": 0,
-  "modified": "2024-10-28 13:32:41.528577",
-  "module": null,
-  "name": "Journal Entry-main-field_order",
-  "property": "field_order",
-  "property_type": "Data",
-  "row_name": null,
-  "value": "[\"entry_type_and_date\", \"is_system_generated\", \"title\", \"excel_territory\", \"voucher_type\", \"naming_series\", \"excel_scheme_name\", \"finance_book\", \"process_deferred_accounting\", \"reversal_of\", \"tax_withholding_category\", \"column_break1\", \"from_template\", \"company\", \"posting_date\", \"apply_tds\", \"2_add_edit_gl_entries\", \"accounts\", \"custom_brand_wise_payments\", \"section_break99\", \"cheque_no\", \"cheque_date\", \"user_remark\", \"column_break99\", \"total_debit\", \"total_credit\", \"difference\", \"get_balance\", \"multi_currency\", \"total_amount_currency\", \"total_amount\", \"total_amount_in_words\", \"reference\", \"project\", \"clearance_date\", \"remark\", \"paid_loan\", \"inter_company_journal_entry_reference\", \"column_break98\", \"bill_no\", \"bill_date\", \"due_date\", \"write_off\", \"write_off_based_on\", \"get_outstanding_invoices\", \"column_break_30\", \"write_off_amount\", \"printing_settings\", \"pay_to_recd_from\", \"column_break_35\", \"letter_head\", \"select_print_heading\", \"addtional_info\", \"mode_of_payment\", \"payment_order\", \"column_break3\", \"is_opening\", \"stock_entry\", \"subscription_section\", \"auto_repeat\", \"amended_from\"]"
- },
- {
-  "default_value": null,
   "doc_type": "Customer",
   "docstatus": 0,
   "doctype": "Property Setter",
@@ -6526,5 +6510,37 @@
   "property_type": "Data",
   "row_name": null,
   "value": "[\"item_code\", \"item_name\", \"col_break1\", \"schedule_date\", \"section_break_4\", \"description\", \"column_break_12\", \"item_group\", \"brand\", \"image\", \"quantity_and_warehouse\", \"qty\", \"custom_curr_stock\", \"custom_precost_mgn\", \"custom_sales_qty\", \"stock_uom\", \"from_warehouse\", \"warehouse\", \"col_break2\", \"uom\", \"conversion_factor\", \"stock_qty\", \"custom_under_production\", \"custom_backlog\", \"custom_pipeline\", \"qty_info_sec_break\", \"min_order_qty\", \"projected_qty\", \"qty_info_col_break\", \"actual_qty\", \"ordered_qty\", \"received_qty\", \"rate_and_amount_section_break\", \"rate\", \"custom_previous_fob_usd\", \"col_break3\", \"amount\", \"accounting_details_section\", \"expense_account\", \"column_break_glru\", \"wip_composite_asset\", \"manufacture_details\", \"manufacturer\", \"manufacturer_part_no\", \"col_break_mfg\", \"bom_no\", \"accounting_dimensions_section\", \"excel_product_team\", \"excel_short_term_loan\", \"excel_short_term_investments\", \"excel_other_loans_and_advances\", \"project\", \"dimension_col_break\", \"excel_lc_no\", \"excel_dream_project\", \"excel_long_term_loans\", \"excel_office_locations\", \"excel_securities_deposits_and_prepayment\", \"cost_center\", \"more_info\", \"lead_time_date\", \"sales_order\", \"sales_order_item\", \"col_break4\", \"production_plan\", \"material_request_plan_item\", \"job_card_item\", \"section_break_46\", \"page_break\"]"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Project Status",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocType",
+  "field_name": null,
+  "is_system_generated": 0,
+  "modified": "2026-10-13 16:49:50.115720",
+  "module": null,
+  "name": "Project Status-main-field_order",
+  "property": "field_order",
+  "property_type": "Data",
+  "row_name": null,
+  "value": "[\"naming_series\", null, \"wo_date\", \"total_wo_value\", \"products_delivery_status\", \"project_start_date\", \"column_break_kbstu\", \"working_progress\", \"handover_status\", \"project_ending_date\", \"final_bill_submission_date\", \"remarks\", \"amended_from\"]"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Journal Entry",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocType",
+  "field_name": null,
+  "is_system_generated": 0,
+  "modified": "2026-10-20 12:51:12.125262",
+  "module": null,
+  "name": "Journal Entry-main-field_order",
+  "property": "field_order",
+  "property_type": "Data",
+  "row_name": null,
+  "value": "[\"entry_type_and_date\", \"is_system_generated\", \"title\", \"excel_territory\", \"voucher_type\", \"naming_series\", \"excel_scheme_name\", \"finance_book\", \"process_deferred_accounting\", \"reversal_of\", \"tax_withholding_category\", \"column_break1\", \"from_template\", \"company\", \"posting_date\", \"apply_tds\", \"2_add_edit_gl_entries\", \"accounts\", \"custom_brand_wise_payments\", \"section_break99\", \"cheque_no\", \"cheque_date\", \"user_remark\", \"column_break99\", \"total_debit\", \"total_credit\", \"difference\", \"get_balance\", \"multi_currency\", null, \"total_amount_currency\", \"total_amount\", \"total_amount_in_words\", \"reference\", \"project\", \"clearance_date\", \"remark\", \"paid_loan\", \"inter_company_journal_entry_reference\", \"column_break98\", \"bill_no\", \"bill_date\", \"due_date\", \"write_off\", \"write_off_based_on\", \"get_outstanding_invoices\", \"column_break_30\", \"write_off_amount\", \"printing_settings\", \"pay_to_recd_from\", \"column_break_35\", \"letter_head\", \"select_print_heading\", \"addtional_info\", \"mode_of_payment\", \"payment_order\", \"column_break3\", \"is_opening\", \"stock_entry\", \"subscription_section\", \"auto_repeat\", \"amended_from\"]"
  }
 ]
