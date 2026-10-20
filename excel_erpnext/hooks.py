@@ -312,7 +312,8 @@ fixtures = ['Custom Field',  "Property Setter",
                             "Finance Officer",
                             "Product Specialist",
                             "Managing Directors",
-                            "IoU Manager"
+                            "IoU Manager",
+                            "IoU User"
                             
                         ],
                     ],  
