@@ -1,0 +1,343 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "CLE-.YYYY.-.#####",
+ "creation": "2026-10-27 13:29:44.079557",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_details_section",
+  "naming_series",
+  "customer",
+  "customer_name",
+  "customer_mobile_number",
+  "column_break_customer",
+  "name_of_the_owner",
+  "start_business_with_excel",
+  "billing_address",
+  "credit_request_section",
+  "sales_person",
+  "enjoying_credit_day",
+  "present_outstanding",
+  "requesting_for_limit",
+  "column_break_credit",
+  "sales_target_current_year",
+  "sales_achievement",
+  "interested_brand_section",
+  "interested_brand",
+  "bank_cheque_section",
+  "bank_name",
+  "cheque_no",
+  "column_break_bank",
+  "account_no",
+  "amount",
+  "attachment_section",
+  "cheque_schedule",
+  "credit_report",
+  "approvers_remarks_section",
+  "sales_supervisor",
+  "head_of_sales",
+  "head_of_cm",
+  "column_break_4vkmu",
+  "head_of_finance",
+  "director",
+  "managing_director",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Code",
+   "options": "Customer",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.mobile_no",
+   "fieldname": "customer_mobile_number",
+   "fieldtype": "Data",
+   "label": "Customer Mobile Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_customer",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "name_of_the_owner",
+   "fieldtype": "Data",
+   "label": "Name of the Owner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_business_with_excel",
+   "fieldtype": "Date",
+   "label": "Start Business with Excel"
+  },
+  {
+   "fieldname": "billing_address",
+   "fieldtype": "Data",
+   "label": "Billing Address"
+  },
+  {
+   "fieldname": "credit_request_section",
+   "fieldtype": "Section Break",
+   "label": "Credit Request Details"
+  },
+  {
+   "fieldname": "sales_person",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Sales Person Name",
+   "options": "Sales Person",
+   "reqd": 1
+  },
+  {
+   "fieldname": "enjoying_credit_day",
+   "fieldtype": "Int",
+   "label": "Enjoying Credit Day",
+   "reqd": 1
+  },
+  {
+   "fieldname": "present_outstanding",
+   "fieldtype": "Currency",
+   "label": "Present Outstanding",
+   "reqd": 1
+  },
+  {
+   "fieldname": "requesting_for_limit",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Requesting for Limit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_credit",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_target_current_year",
+   "fieldtype": "Currency",
+   "label": "Sales Target (Current Year)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sales_achievement",
+   "fieldtype": "Currency",
+   "label": "Sales Achievement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "interested_brand_section",
+   "fieldtype": "Section Break",
+   "label": "Interested Brand"
+  },
+  {
+   "fieldname": "interested_brand",
+   "fieldtype": "Table",
+   "label": "Interested Brand",
+   "options": "Excel CLEF Interested Brand"
+  },
+  {
+   "fieldname": "bank_cheque_section",
+   "fieldtype": "Section Break",
+   "label": "Bank / Cheque Details"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank Name"
+  },
+  {
+   "fieldname": "cheque_no",
+   "fieldtype": "Data",
+   "label": "Cheque No"
+  },
+  {
+   "fieldname": "column_break_bank",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_no",
+   "fieldtype": "Data",
+   "label": "Account No"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "attachment_section",
+   "fieldtype": "Section Break",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "cheque_schedule",
+   "fieldtype": "Table",
+   "label": "Cheque (Schedule)",
+   "options": "Excel CLEF Cheque Schedule"
+  },
+  {
+   "fieldname": "credit_report",
+   "fieldtype": "Table",
+   "label": "Credit Report",
+   "options": "Excel CLEF Credit Report",
+   "permlevel": 8
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Excel Credit Limit Enhancement Form",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CLE-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "approvers_remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Approver's Remarks"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_supervisor",
+   "fieldtype": "Small Text",
+   "label": "Sales Supervisor",
+   "permlevel": 2
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "head_of_sales",
+   "fieldtype": "Small Text",
+   "label": "Head of Sales",
+   "permlevel": 3
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "head_of_cm",
+   "fieldtype": "Small Text",
+   "label": "Head of CM",
+   "permlevel": 4
+  },
+  {
+   "fieldname": "column_break_4vkmu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "head_of_finance",
+   "fieldtype": "Small Text",
+   "label": "Head of Finance",
+   "permlevel": 5
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "director",
+   "fieldtype": "Small Text",
+   "label": "Director",
+   "permlevel": 6
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "managing_director",
+   "fieldtype": "Small Text",
+   "label": "Managing Director",
+   "permlevel": 7
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-10-27 15:35:37.677760",
+ "modified_by": "Administrator",
+ "module": "Excel ERPNext",
+ "name": "Excel Credit Limit Enhancement Form",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 2,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "permlevel": 2,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "customer_name",
+ "track_changes": 1
+}
